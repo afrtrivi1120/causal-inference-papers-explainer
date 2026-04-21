@@ -11,57 +11,75 @@
 #
 # MIT license. Repo: papers_explainer.
 
+# Resolve the script's own directory so `source()` and `figures/` work whether
+# this script is invoked from the repo root or from its own folder.
+.args <- commandArgs(trailingOnly = FALSE)
+.file <- .args[grepl("^--file=", .args)]
+if (length(.file) > 0) setwd(dirname(sub("^--file=", "", .file[1])))
+
 source("../../shared/r-setup.R")
 
 # -------- Parameters the reader can tune -----------------------------------
 N_SIM  <- 300    # Monte Carlo draws per scenario. Drop to 50 for quick iteration.
 N      <- 2000   # Units per draw
-TAU    <- 1.5    # True per-unit gain base (ATT when selection on gain => average gain among treated)
+TAU    <- 1.5    # True per-unit gain base. NB: with v ~ N(0,1) this implies
+                 # P(D=1) ~ Phi(1.5) ~ 0.93 — an intentionally imbalanced split
+                 # that magnifies the Roy-selection bias. Setting TAU = 0 gives
+                 # a 50/50 split and shrinks the Scenario B bias accordingly.
 LAMBDA <- 1.0    # Spread of individual gains around TAU
 GAMMA  <- 0.8    # Common time effect in untreated potential outcome Y(0,t=2) - Y(0,t=1)
 SIGMA  <- 0.5    # Idiosyncratic noise sd
 # ---------------------------------------------------------------------------
 
-# Run one 2-period, 2-group DGP draw and return (true ATT, DiD estimate).
+# One draw of the DGP for a given value of rho. Returns a tibble of unit-level
+# outcomes + the counterfactual Y(0) for the treated (useful for the plot).
 #
 # rho controls the correlation between the "gain-driving" unobserved v and the
 # untreated trend in period 2. rho = 0 => PT holds; rho > 0 => Roy selection
 # silently breaks PT because treated units (high gain) also have a steeper
-# untreated trend.
-run_once <- function(rho) {
+# untreated trend. Note the joint dependence: bias = rho * (E[v|D=1] - E[v|D=0])
+# — both rho > 0 AND selection correlated with v are required. Either alone
+# leaves DiD unbiased.
+draw_dgp <- function(rho) {
   alpha <- rnorm(N, 0, 1)       # time-invariant unit heterogeneity (level)
   v     <- rnorm(N, 0, 1)       # drives individual treatment gain
   eps1  <- rnorm(N, 0, SIGMA)   # period-1 noise
   eps2  <- rnorm(N, 0, SIGMA)   # period-2 noise
 
-  # Untreated potential outcomes.
-  # In period 2, a rho*v term creates a link between the untreated trend
-  # and the same v that drives gain. This is the Roy-style violation.
   y0_t1 <- alpha + eps1
   y0_t2 <- alpha + GAMMA + rho * v + eps2
 
-  # Individual gain: TAU base + heterogeneous component.
-  gain <- TAU + LAMBDA * v
+  gain  <- TAU + LAMBDA * v
   y1_t2 <- y0_t2 + gain
 
-  # Selection rule: treat if expected gain (plus mild noise) is positive.
-  # This is a "Roy-style" selection on gains.
-  D <- as.integer(gain + rnorm(N, 0, 0.3) > 0)
+  # Roy-style selection: treat if expected gain (plus mild noise) is positive.
+  D     <- as.integer(gain + rnorm(N, 0, 0.3) > 0)
 
-  # Observed outcomes: no treatment in period 1; selected treatment in period 2.
-  y_t1 <- y0_t1
-  y_t2 <- ifelse(D == 1, y1_t2, y0_t2)
+  y_t1  <- y0_t1
+  y_t2  <- ifelse(D == 1, y1_t2, y0_t2)
 
-  # True ATT in period 2 = average gain among the treated.
-  att_true <- mean(gain[D == 1])
+  tibble(
+    id     = seq_len(N),
+    D      = D,
+    gain   = gain,
+    y_t1   = y_t1,
+    y_t2   = y_t2,
+    y0_t1  = y0_t1,
+    y0_t2  = y0_t2
+  )
+}
 
-  # Assemble a long panel and fit the canonical 2x2 DiD.
+# Fit the canonical 2x2 DiD on one draw and return (true ATT, DiD, bias).
+run_once <- function(rho) {
+  dgp <- draw_dgp(rho)
+  att_true <- mean(dgp$gain[dgp$D == 1])
+
   df <- tibble(
-    id     = rep(seq_len(N), 2),
+    id     = rep(dgp$id, 2),
     period = c(rep(1L, N), rep(2L, N)),
     post   = as.integer(c(rep(0L, N), rep(1L, N))),
-    treat  = rep(D, 2),
-    y      = c(y_t1, y_t2)
+    treat  = rep(dgp$D, 2),
+    y      = c(dgp$y_t1, dgp$y_t2)
   )
 
   fit <- lm(y ~ treat * post, data = df)
@@ -80,7 +98,7 @@ cat("Running Scenario B (Roy selection, rho = 1) ... ")
 B <- replicate(N_SIM, run_once(rho = 1.0))
 cat("done.\n\n")
 
-summary_table <- tibble(
+summary_tbl <- tibble(
   scenario          = c("A: PT holds (rho=0)", "B: Roy selection (rho=1)"),
   mean_true_ATT     = c(mean(A["att_true", ]), mean(B["att_true", ])),
   mean_DiD_estimate = c(mean(A["dd", ]),       mean(B["dd", ])),
@@ -89,31 +107,22 @@ summary_table <- tibble(
 )
 
 cat("Monte Carlo summary (", N_SIM, " draws, N = ", N, " per draw):\n", sep = "")
-print(summary_table, n = Inf)
+print(summary_tbl, n = Inf)
 cat("\n")
 
 # -------- Diagnostic plot: group-period means in one representative draw ----
-# Re-run once per scenario and plot the group*period means, plus the
-# counterfactual trend (what Y(0) looks like for the treated).
-draw_for_plot <- function(rho, label) {
-  alpha <- rnorm(N, 0, 1)
-  v     <- rnorm(N, 0, 1)
-  eps1  <- rnorm(N, 0, SIGMA)
-  eps2  <- rnorm(N, 0, SIGMA)
-  y0_t1 <- alpha + eps1
-  y0_t2 <- alpha + GAMMA + rho * v + eps2
-  gain  <- TAU + LAMBDA * v
-  y1_t2 <- y0_t2 + gain
-  D     <- as.integer(gain + rnorm(N, 0, 0.3) > 0)
-  y_t1  <- y0_t1
-  y_t2  <- ifelse(D == 1, y1_t2, y0_t2)
+# Re-anchor the seed so the plot draw is reproducible regardless of N_SIM
+# (the MC loops above consumed an N_SIM-dependent amount of RNG state).
+set.seed(20260421)
 
+draw_for_plot <- function(rho, label) {
+  dgp <- draw_dgp(rho)
   tibble(
     scenario = label,
     period   = rep(c(1, 2), each = N),
-    D        = rep(D, 2),
-    y        = c(y_t1, y_t2),
-    y0       = c(y0_t1, y0_t2)   # counterfactual: what treated would have been
+    D        = rep(dgp$D, 2),
+    y        = c(dgp$y_t1, dgp$y_t2),
+    y0       = c(dgp$y0_t1, dgp$y0_t2)
   )
 }
 
@@ -161,12 +170,13 @@ cat("Saved figures/parallel-trends-diagnostic.png\n\n")
 # -------- Final commentary --------------------------------------------------
 cat(strrep("-", 70), "\n", sep = "")
 cat("Punchline:\n")
-cat("  * Scenario A: DiD is ~unbiased. Parallel trends holds because\n")
-cat("    selection only depends on time-invariant alpha_i.\n")
+cat("  * Scenario A: DiD is ~unbiased. Selection on gains is present in\n")
+cat("    both scenarios, but with rho = 0 the gain-driving factor is\n")
+cat("    independent of the untreated trend, so parallel trends still holds.\n")
 cat("  * Scenario B: DiD is systematically biased (mean bias =",
-    round(mean(B["bias", ]), 2), "). Treated units select on gains\n")
-cat("    that correlate with their untreated trend, so the 'control\n")
-cat("    group's trend' is not a valid stand-in for Y(0) in the treated\n")
-cat("    group. The treatment effect is still constant; the bias comes\n")
-cat("    entirely from selection, as Ghanem, Sant'Anna & Wuthrich show.\n")
+    round(mean(B["bias", ]), 2), "). The bias is the PRODUCT of two things:\n")
+cat("    (i)  rho > 0 ties the untreated trend to the gain-driving factor v,\n")
+cat("    (ii) treatment selects units with high v.\n")
+cat("    Remove either ingredient and DiD is unbiased. Ghanem, Sant'Anna &\n")
+cat("    Wuthrich's contribution is to make that joint dependence explicit.\n")
 cat(strrep("-", 70), "\n", sep = "")

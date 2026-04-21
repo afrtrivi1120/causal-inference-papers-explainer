@@ -5,7 +5,6 @@
 Blandhol, C., Bonney, J., Mogstad, M., & Torgovitsky, A. (2025). *When is TSLS Actually LATE?*
 
 - NBER: <https://www.nber.org/papers/w29709>
-- See [`references.md`](references.md) for adjacent reading.
 
 ## Related reading
 

@@ -110,8 +110,12 @@ Three practical moves you should make on your next DiD project:
 
 [`simulation.R`](simulation.R) builds a 2-period × 2-group DGP where the true ATT is a well-defined average gain. It runs two scenarios:
 
-- **Scenario A** — `rho = 0`. Selection depends only on time-invariant gain `v`, and `v` is *independent* of the untreated trend. Classic 2×2 DiD is unbiased.
-- **Scenario B** — `rho = 1`. Same selection rule, but now the gain-driving factor also drives the untreated trend. This is Roy selection, exactly the mechanism the paper warns about. DiD is biased upward by roughly 2 units across 300 Monte-Carlo draws.
+- **Scenario A** — `rho = 0`. Selection is still Roy-style (units opt in on expected gains), but the gain-driving factor `v` is *independent* of the untreated trend, so the DiD is unbiased.
+- **Scenario B** — `rho = 1`. Same selection rule, but now the gain-driving factor *also* drives the untreated trend. DiD is biased upward by roughly 2 units across 300 Monte-Carlo draws.
+
+The bias decomposes cleanly: `bias = rho · (E[v | D=1] − E[v | D=0])`. Both `rho > 0` *and* selection correlated with `v` are required — remove either ingredient and the DiD is unbiased. That joint dependence is exactly Ghanem, Sant'Anna & Wüthrich's point: parallel trends is neither "a property of the trends" nor "a property of the selection rule", but a property of their interaction.
+
+A second note about the numbers: with `TAU = 1.5` and `v ~ N(0, 1)` the treatment share is roughly 93% — an intentionally imbalanced split that amplifies the Scenario B bias. Setting `TAU = 0` in the script gives a 50/50 split and shrinks the bias accordingly without changing the qualitative story.
 
 The script prints a summary table and saves `figures/parallel-trends-diagnostic.png` showing treated/control group means plus the treated group's counterfactual `Y(0)` trend, so you can see exactly where the "trend gap" emerges in Scenario B.
 

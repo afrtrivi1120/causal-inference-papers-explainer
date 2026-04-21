@@ -15,7 +15,19 @@
 # bandwidths with bias-corrected robust inference when you suspect
 # curvature near the cutoff.
 #
+# Seed design note: shared/r-setup.R sets set.seed(20260421) once on source.
+# The Monte Carlo loop consumes an N_SIM-dependent amount of RNG state, so the
+# diagnostic plot at the bottom explicitly re-anchors with set.seed(20260421)
+# before drawing its representative scatter. Result: MC numbers depend on
+# N_SIM, the plot does not.
+#
 # MIT license. Repo: papers_explainer.
+
+# Resolve the script's own directory so `source()` and `figures/` work whether
+# this script is invoked from the repo root or from its own folder.
+.args <- commandArgs(trailingOnly = FALSE)
+.file <- .args[grepl("^--file=", .args)]
+if (length(.file) > 0) setwd(dirname(sub("^--file=", "", .file[1])))
 
 source("../../shared/r-setup.R")
 
@@ -46,12 +58,21 @@ specs <- tibble(
 )
 
 # ---------------------------------------------------------------------------
-# Map infer label -> row index of rdrobust's 3x1 coef / 3x2 ci matrices.
-infer_row <- function(infer) {
-  which(c("Conventional", "Bias-Corrected", "Robust") == infer)
+# Look up an inference row by NAME, not by position, so a future rdrobust
+# version that reorders or adds rows does not silently read the wrong number.
+coef_by_name <- function(fit, label) {
+  rn <- rownames(fit$coef)
+  stopifnot(
+    "rdrobust$coef rownames changed — update the allowed labels" =
+      all(c("Conventional", "Bias-Corrected", "Robust") %in% rn)
+  )
+  i <- which(rn == label)
+  list(est  = unname(fit$coef[i, 1]),
+       ci_l = unname(fit$ci[i, 1]),
+       ci_r = unname(fit$ci[i, 2]))
 }
 
-# Run all specs on one DGP draw and return a (spec x metric) matrix.
+# Run all specs on one DGP draw and return a (metric x spec) matrix.
 run_once <- function() {
   X   <- runif(N, -1, 1)
   D   <- as.integer(X >= 0)
@@ -74,17 +95,13 @@ run_once <- function() {
 
   vapply(seq_len(nrow(specs)), function(i) {
     key <- paste(specs$bw[i], specs$p[i], sep = "_")
-    fit <- fits[[key]]
-    r   <- infer_row(specs$infer[i])
-    est <- unname(fit$coef[r, 1])
-    ci_l <- unname(fit$ci[r, 1])
-    ci_r <- unname(fit$ci[r, 2])
+    r   <- coef_by_name(fits[[key]], specs$infer[i])
     c(
-      est     = est,
-      ci_l    = ci_l,
-      ci_r    = ci_r,
-      covered = as.numeric(ci_l <= TAU_TRUE & TAU_TRUE <= ci_r),
-      width   = ci_r - ci_l
+      est     = r$est,
+      ci_l    = r$ci_l,
+      ci_r    = r$ci_r,
+      covered = as.numeric(r$ci_l <= TAU_TRUE & TAU_TRUE <= r$ci_r),
+      width   = r$ci_r - r$ci_l
     )
   }, numeric(5))
 }
@@ -190,16 +207,16 @@ for (i in seq_len(nrow(summary_tbl))) {
 }
 cat("\n")
 cat("Pattern across specs (mirroring the paper's practical message):\n")
-cat("  * MSE-optimal + Conventional:   smallest CI width, largest bias,\n")
-cat("                                  slightly under-covers.\n")
-cat("  * MSE-optimal + Robust (BC):    corrects the bias, wider CI,\n")
-cat("                                  coverage close to nominal.\n")
-cat("  * CER-optimal + Robust (BC):    smaller bias still, widest CI,\n")
-cat("                                  most reliable coverage.\n")
-cat("  * p = 2 + Robust (BC):          nearly unbiased, widest CI overall,\n")
-cat("                                  coverage at or above nominal.\n\n")
-cat("The per-spec gap is modest in this DGP (coverage all in 0.92-0.95),\n")
-cat("but the *direction* is exactly as De Magalhaes et al. document: when\n")
+cat("  * Conventional inference leaves visible bias at MSE-optimal bandwidths.\n")
+cat("    Robust (BC) shrinks that bias at the cost of a wider CI.\n")
+cat("  * CER-optimal bandwidths narrow the window relative to MSE-optimal,\n")
+cat("    trading variance for reduced bias — what matters for coverage.\n")
+cat("  * Higher polynomial order (p = 2) further reduces bias, again at\n")
+cat("    the cost of CI width.\n\n")
+cat("The per-spec gap is modest in this DGP (coverage all in 0.92-0.95\n")
+cat("and bias within ~2-3 MC standard errors of each other) — so treat\n")
+cat("the POINT-estimate bias ranking as indicative, not significant.\n")
+cat("The *direction* is exactly as De Magalhaes et al. document: when\n")
 cat("you suspect curvature near the cutoff, CER-optimal bandwidth + bias-\n")
 cat("corrected robust inference is the safer default.\n")
 cat(strrep("-", 70), "\n", sep = "")

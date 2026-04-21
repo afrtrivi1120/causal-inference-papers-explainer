@@ -5,14 +5,16 @@
 
 required_pkgs <- c(
   "tidyverse",  # dplyr, ggplot2, purrr, tibble — data wrangling + plotting
-  "fixest",     # feols() with fast fixed-effects estimation (DiD, panel)
-  "did",        # Callaway-Sant'Anna DiD estimators
-  "AER",        # ivreg() for classic TSLS
-  "estimatr",   # iv_robust() and lm_robust() with HC SEs
-  "rdrobust",   # Calonico-Cattaneo-Titiunik RDD with bias correction
-  "rddensity",  # McCrary-style density tests for the running variable
+  "AER",        # ivreg() for classic TSLS (paper 02)
+  "rdrobust",   # Calonico-Cattaneo-Titiunik RDD with bias correction (paper 03)
   "ggplot2"     # explicit to keep plot code self-documenting
 )
+# Additional packages that a future paper may need (add to the vector above
+# when it is actually used by a simulation, not before):
+#   fixest    — feols() for fast fixed-effects estimation (DiD, panel)
+#   did       — Callaway-Sant'Anna DiD estimators
+#   estimatr  — iv_robust() / lm_robust() with HC SEs
+#   rddensity — McCrary-style density tests for the running variable
 
 missing_pkgs <- setdiff(required_pkgs, rownames(installed.packages()))
 if (length(missing_pkgs) > 0) {

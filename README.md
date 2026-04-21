@@ -41,14 +41,16 @@ Rscript papers/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.
 **Requirements:** R ≥ 4.3. Packages (loaded via `shared/r-setup.R`):
 
 ```
-tidyverse, fixest, did, AER, estimatr, rdrobust, rddensity, ggplot2
+tidyverse, AER, rdrobust, ggplot2
 ```
 
 Install anything missing with:
 
 ```r
-install.packages(c("tidyverse","fixest","did","AER","estimatr","rdrobust","rddensity"))
+install.packages(c("tidyverse", "AER", "rdrobust", "ggplot2"))
 ```
+
+Future papers may add to this list; `shared/r-setup.R` is the source of truth.
 
 Every simulation is seeded (`set.seed(20260421)` in `shared/r-setup.R`) so re-running gives identical numbers. Each script exposes an `N_SIM` constant near the top so you can throttle Monte Carlo work for quick iteration.
 

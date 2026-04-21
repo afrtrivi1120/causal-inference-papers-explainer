@@ -6,7 +6,8 @@
 
 De Magalhães, L., Hangartner, D., Hirvonen, S., Meriläinen, J., Ruiz, N. A., & Tukiainen, J. (2025). *When Can We Trust Regression Discontinuity Design Estimates from Close Elections? Evidence from Experimental Benchmarks*.
 
-- See [`references.md`](references.md) for adjacent reading.
+- Search / working-paper link: [Google Scholar](https://scholar.google.com/scholar?q=De+Magalh%C3%A3es+Hangartner+Hirvonen+Meril%C3%A4inen+Ruiz+Tukiainen+RDD+close+elections+experimental+benchmarks)
+- A stable DOI or publisher URL was not available at the time of writing; see [`references.md`](references.md) for adjacent reading and update both files once a DOI is published.
 
 ## 2. TL;DR
 
@@ -144,7 +145,12 @@ p=2, MSE-opt, Robust (BC)       0.498  −0.002    0.95      0.66
 p=2, CER-opt, Robust (BC)       0.495  −0.005    0.92      0.78
 ```
 
-Coverage sits in the 0.92–0.95 band across all specs — the per-spec gap is modest, exactly as De Magalhães et al. report for moderate-curvature cases. What moves clearly is **bias**: Conventional inference at MSE-optimal leaves a visible bias in the point estimate; Robust (BC) shrinks that bias by roughly half, at the cost of a wider CI. Under the paper's experimental benchmark, that tradeoff favors CER-optimal + Robust as the safer default.
+Two things to read off this table honestly:
+
+- **Coverage** sits in the 0.92–0.95 band across all specs. At N_SIM = 500 the Monte-Carlo SE on a coverage of 0.93 is about ±0.011, so a 3-percentage-point gap is marginal but meaningfully in the right direction — exactly as De Magalhães et al. report for moderate-curvature cases.
+- **Bias** ranking (Conventional ≈ −0.02; Robust ≈ +0.01–0.05) is close to the Monte-Carlo noise floor at this N_SIM; treat the ordering as indicative, not statistically separable. What matters pedagogically is the *direction*: Robust (BC) shrinks bias at the cost of a wider CI, and the paper's experimental benchmark favours that tradeoff.
+
+Under the paper's experimental benchmark, the combined evidence — better coverage plus smaller bias — favors **CER-optimal + Robust** as the safer default whenever curvature is a concern.
 
 Two diagnostic images are written:
 

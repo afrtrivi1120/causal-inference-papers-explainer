@@ -19,13 +19,20 @@
 #
 # DGP:
 #   X ~ Bernoulli(0.5).
-#   Z | X=0 ~ Bernoulli(0.3);  Z | X=1 ~ Bernoulli(0.7).
+#   Z | X=0 ~ Bernoulli(0.15);  Z | X=1 ~ Bernoulli(0.55).
+#     (Asymmetric on purpose — see note near pZ_X0, pZ_X1 below.)
 #   X=0: complier share 0.20, stratum LATE = 3.0 (big effect, few compliers)
 #   X=1: complier share 0.60, stratum LATE = 0.0 (no effect, many compliers)
 #   Target estimand: population LATE, weighting stratum LATEs by their
 #     complier mass = 0.75.
 #
 # MIT license. Repo: papers_explainer.
+
+# Resolve the script's own directory so `source()` and `figures/` work whether
+# this script is invoked from the repo root or from its own folder.
+.args <- commandArgs(trailingOnly = FALSE)
+.file <- .args[grepl("^--file=", .args)]
+if (length(.file) > 0) setwd(dirname(sub("^--file=", "", .file[1])))
 
 source("../../shared/r-setup.R")
 
@@ -99,13 +106,18 @@ run_once <- function() {
   est_sat <- unname((mass0 * w0["wald"] + mass1 * w1["wald"]) / (mass0 + mass1))
 
   # ---- Estimator 3: full-interaction TSLS, aggregated by COMPLIER mass -----
-  # Y ~ D + X + D:X | Z + X + Z:X saturates the first stage.
+  # Y ~ D + X + D:X | Z + X + Z:X saturates the first stage. Note: the
+  # complier-mass WEIGHTS (mass0, mass1) here come from the stratum Wald
+  # first stage above, not from fit_int. This mix-and-match is an approximation
+  # that works cleanly because X is binary and N is large. For continuous or
+  # high-dimensional X, the "canonical" saturated IV is Estimator 2 (stratum
+  # Wald pooled) or a target-parameter approach (UJIVE / MTW 2021) — not this
+  # one-liner. See README section 10.
   df2 <- df |> mutate(DX = D * X, ZX = Z * X)
   fit_int  <- AER::ivreg(Y ~ D + X + DX | Z + X + ZX, data = df2)
-  tau0_hat <- unname(coef(fit_int)["D"])              # stratum X=0 LATE hat
+  tau0_hat <- unname(coef(fit_int)["D"])                        # stratum X=0 LATE hat
   tau1_hat <- unname(coef(fit_int)["D"] + coef(fit_int)["DX"])  # stratum X=1 LATE hat
-  est_full <- (mass0 * tau0_hat + mass1 * tau1_hat) / (mass0 + mass1)
-  est_full <- unname(est_full)
+  est_full <- unname((mass0 * tau0_hat + mass1 * tau1_hat) / (mass0 + mass1))
 
   c(
     unsat    = est_unsat,
