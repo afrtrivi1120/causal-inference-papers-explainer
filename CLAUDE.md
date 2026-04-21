@@ -52,12 +52,12 @@ Every `papers/NN-*/README.md` MUST follow this structure, in this order. Subagen
 
 ## R conventions
 
-- Every `simulation.R` starts with `source("../../shared/r-setup.R")` (relative path from the paper folder).
-- `shared/r-setup.R` sets `set.seed(20260421)`. Per-script overrides are fine but should be explicit.
+- Every `simulation.R` begins with a short **script-dir preamble** that uses `commandArgs(trailingOnly = FALSE)` + `--file=` to chdir into the script's own directory, then sources `../../shared/r-setup.R`. This makes `Rscript papers/NN-*/simulation.R` work whether it's invoked from the repo root or from the paper folder. Copy the 4-line preamble from any existing paper; do not reinvent it.
+- `shared/r-setup.R` sets `set.seed(20260421)`. Per-script overrides are fine but should be explicit — and when the script consumes RNG via a Monte Carlo loop, re-anchor with `set.seed(20260421)` before any "representative" plot draws (see papers 01 and 03).
 - Use **tidyverse** (dplyr, ggplot2, purrr) for data manipulation and plotting. `data.table` is fine if a specific script benefits from it — document why at the top.
 - Expose an `N_SIM` constant near the top of each script so readers can throttle Monte Carlo draws for quick iteration.
 - Always print a **truth vs. estimate** comparison.
-- Always render **at least one diagnostic plot** (`ggplot2` preferred). Plots may be displayed interactively or saved to `figures/`; either is fine, but `figures/` images are gitignored.
+- Always render **at least one diagnostic plot** (`ggplot2` preferred), saved to `papers/NN-*/figures/` via `dir.create("figures", showWarnings = FALSE)` + `ggsave("figures/...")`. The `figures/` directory is gitignored.
 - When a package is missing, emit a clear install hint — do not fail with a raw traceback. `shared/r-setup.R` already handles this for the standard package list.
 - No secrets, no API keys, no hard-coded absolute paths. Everything must run on a clean machine after `install.packages(...)`.
 
@@ -65,12 +65,14 @@ Every `papers/NN-*/README.md` MUST follow this structure, in this order. Subagen
 
 Four project-scoped subagents live in `.claude/agents/`. Invoke them in this order when adding or revising a paper:
 
-| Step | Agent | Why |
-|------|-------|-----|
-| 1 | `causal-inference-expert` | Technical accuracy. Reads the PDF or source, extracts the estimand, identification argument, assumptions, and results. Drafts or critiques the technical sections of the README (5, 7, 8, 9). |
-| 2 | `causal-inference-professor` | Pedagogy. Rewrites the TL;DR, builds the Glossary, adds analogies, and keeps math minimal in prose while preserving correctness. Owns sections 2, 4, 5, 6, 10. |
-| 3 | `r-coding-expert` | Simulation. Produces `simulation.R` following the R conventions above, runs it with `Rscript` to confirm it executes end-to-end, and reports missing packages with an install hint. |
-| 4 | `git-github-expert` | Repository hygiene. Updates the contents table in the top-level README, stages only files for the paper being added, writes a conventional commit, and prepares `gh repo create` / `gh pr create` instructions when the user is ready to push. |
+| Step | Agent | Owns | Why |
+|------|-------|------|-----|
+| 1 | `causal-inference-expert` | Scaffold `papers/NN-*/README.md` + `references.md`. Sections 1 (Citation), 5 (Glossary), 7 (Method), 8 (Assumptions), 9 (Findings). | Technical accuracy. Reads the PDF or source, extracts the estimand, identification argument, assumptions, and results. Writes to disk directly (has `Write` + `Edit`). |
+| 2 | `causal-inference-professor` | Sections 2 (TL;DR), 4 (Causal question), 5 (Glossary rewrite), 6 (Core idea), 10 (Practitioner takeaway). | Pedagogy. Edits the README in place via `Edit`; keeps math minimal in prose while preserving correctness. Does NOT add new Glossary terms the expert has not defined. |
+| 3 | `r-coding-expert` | `simulation.R` + section 11 (Runnable example) in `README.md`. | Simulation. Produces `simulation.R` following the R conventions above, runs it with `Rscript` to confirm it executes end-to-end, writes section 11 into the README, and updates `shared/r-setup.R` / top-level `README.md` if it needs a new package. |
+| 4 | `git-github-expert` | Contents table in top-level `README.md`. `.gitignore`. Commit history. | Repository hygiene. Stages only files for the paper being added, writes a conventional commit, and prepares `gh repo create` / `gh pr create` instructions when the user is ready to push. |
+
+Pipeline order is strict: expert → professor → R coder → git. The R coder depends on the professor's section-6 narrative for the section-11 framing; the git agent will refuse to commit a folder with `TODO:` placeholders in any 12-section slot.
 
 Rule of thumb: the expert drafts, the professor rewrites, the R coder verifies, the git expert ships.
 
