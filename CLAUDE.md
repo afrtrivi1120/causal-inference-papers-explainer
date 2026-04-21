@@ -21,7 +21,12 @@ Build plain-language explainers of methodological causal-inference papers, paire
 │       ├── simulation.R     # Runnable simulation (methodological papers only)
 │       └── references.md    # Citation + adjacent reading
 ├── docs/
-│   └── plans/               # Implementation plans (ce:plan output)
+│   ├── plans/               # Implementation plans (ce:plan output)
+│   └── solutions/           # Documented solutions to past problems (runtime errors,
+│                            # best practices, workflow patterns), organized by
+│                            # category with YAML frontmatter (module, tags,
+│                            # problem_type). Relevant when implementing or
+│                            # debugging in documented areas.
 ```
 
 Folder numbering: `NN-` is a zero-padded two-digit sequence (`01-`, `02-`, ...) reflecting the order in which papers were added to the repo. This is *not* a ranking.
