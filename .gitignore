@@ -1,0 +1,22 @@
+# PDFs — sources are linked from each paper's README, not redistributed here
+*.pdf
+
+# R artifacts
+.Rhistory
+.RData
+.Rapp.history
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# Compound Engineering local config
+.compound-engineering/*.local.yaml
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Figures rendered by simulations (keep source code, not screen output)
+papers/**/figures/*.png
+papers/**/figures/*.pdf
