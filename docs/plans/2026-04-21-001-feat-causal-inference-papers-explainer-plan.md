@@ -179,7 +179,7 @@ Per-paper README anatomy (12 sections, enforced by CLAUDE.md):
 
 ## Implementation Units
 
-- [ ] **Unit 1: Repository scaffolding**
+- [x] **Unit 1: Repository scaffolding**
 
   **Goal:** Create the top-level files that define the repo (landing README, CLAUDE.md, .gitignore updates, shared R setup) and copy this plan into the repo's `docs/plans/` for discoverability.
 
@@ -213,7 +213,7 @@ Per-paper README anatomy (12 sections, enforced by CLAUDE.md):
 
 ---
 
-- [ ] **Unit 2: Four project subagents**
+- [x] **Unit 2: Four project subagents**
 
   **Goal:** Write four subagent definitions into `.claude/agents/` with precise roles, tool scopes, and invocation guidance.
 
@@ -248,7 +248,7 @@ Per-paper README anatomy (12 sections, enforced by CLAUDE.md):
 
 ---
 
-- [ ] **Unit 3: Paper 01 — Ghanem, Sant'Anna & Wüthrich (DiD / Selection and Parallel Trends)**
+- [x] **Unit 3: Paper 01 — Ghanem, Sant'Anna & Wüthrich (DiD / Selection and Parallel Trends)**
 
   **Goal:** Write the plain-language explainer and a runnable DiD simulation that illustrates when parallel trends holds and when selection-on-gains breaks it.
 
@@ -286,7 +286,7 @@ Per-paper README anatomy (12 sections, enforced by CLAUDE.md):
 
 ---
 
-- [ ] **Unit 4: Paper 02 — Blandhol, Bonney, Mogstad & Torgovitsky (TSLS and LATE)**
+- [x] **Unit 4: Paper 02 — Blandhol, Bonney, Mogstad & Torgovitsky (TSLS and LATE)**
 
   **Goal:** Explainer + simulation showing that adding covariates to TSLS without full saturation can give negative weights on some CATEs, breaking the LATE interpretation.
 
@@ -324,7 +324,7 @@ Per-paper README anatomy (12 sections, enforced by CLAUDE.md):
 
 ---
 
-- [ ] **Unit 5: Paper 03 — De Magalhães et al. (RDD validation from close elections)**
+- [x] **Unit 5: Paper 03 — De Magalhães et al. (RDD validation from close elections)**
 
   **Goal:** Explainer + simulation comparing MSE-optimal vs CER-optimal bandwidths at multiple polynomial degrees in a sharp RDD with known non-linear curvature.
 
@@ -363,7 +363,7 @@ Per-paper README anatomy (12 sections, enforced by CLAUDE.md):
 
 ---
 
-- [ ] **Unit 6: Integration, landing-page wiring, and git history**
+- [x] **Unit 6: Integration, landing-page wiring, and git history**
 
   **Goal:** Wire the finished paper folders into the landing README contents table, run one end-to-end sanity check, and create clean initial commits.
 
