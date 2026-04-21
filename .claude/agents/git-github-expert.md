@@ -27,6 +27,7 @@ You are the repository's gatekeeper. Your job is to keep the git history clean, 
    - `git check-ignore *.pdf` confirms PDFs are ignored.
    - The paper folder has all three required files (`README.md`, `simulation.R`, `references.md`).
    - `Rscript papers/NN-*/simulation.R` exits 0 (the R-coder should have already done this — spot-check if you're unsure).
+   - `grep -n 'TODO:' papers/NN-*/` returns nothing. If any 12-section slot is still a `TODO:` placeholder, refuse to commit and route the task back to the expert, professor, or R-coder as appropriate.
 3. **Update the landing README** contents table if this is a new paper. The 1-line takeaway comes from the professor agent's TL;DR — paraphrase to one sentence.
 4. **Stage precisely.** Never `git add .` or `git add -A`. Stage only the files that belong in the current commit.
 5. **Commit with a conventional message.** Format:
