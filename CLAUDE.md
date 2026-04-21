@@ -115,19 +115,54 @@ Troubleshooting:
 - *Simulation feels slow* — each script exposes an `N_SIM` constant; set it to a small number (e.g., 50) for quick iteration.
 - *Different numbers than expected* — verify you haven't changed `set.seed(...)` upstream.
 
-## Publishing
+## Committing, pushing, and publishing
 
-This repo is initialized locally with `git init`. When you're ready to push to GitHub:
+Claude **should commit at each milestone, not at session end**, and **push after each commit once the remote exists**. This authorization is durable and lives here so Claude does not need to re-confirm it each session.
+
+### What counts as a milestone
+
+One commit per logical change, landed as soon as the change is coherent and verified:
+
+| Trigger | Example commit message |
+|---|---|
+| Repo scaffold lands (a new convention in `CLAUDE.md`, a new `shared/` helper, a `.gitignore` update) | `feat(repo): ...`  ·  `chore(repo): ...` |
+| A subagent definition is added or meaningfully reshaped | `feat(agents): ...`  ·  `fix(agents): ...` |
+| A paper folder is complete (`README.md` + `simulation.R` + `references.md`, all sections filled, simulation runs clean) | `feat(papers/NN): add paper NN — <short topic>` |
+| A review-fix batch lands (one batch per ce:review run, not one per finding) | `fix: apply ce:review batch N (...)` |
+| A new learning is captured via ce:compound | `docs(solutions): ...` |
+| A plan is added or its checkboxes are flipped | `chore(repo): mark plan units complete`  ·  `docs(plans): ...` |
+| Landing `README.md` contents table gains a row | `docs(readme): add paper NN to contents` |
+
+Stage only the files that belong in the commit — never `git add .`, never `git add -A`, never `git commit -am`. Scope the commit message. One logical change per commit.
+
+### Pre-commit checklist
+
+Before running `git commit`, Claude verifies:
+
+- The relevant `simulation.R` files exit 0 under `Rscript` (for changes that touch simulations).
+- No `TODO:` placeholder survives in any 12-section slot of a paper README.
+- `git check-ignore *.pdf` confirms PDFs remain untracked.
+- Hooks are not bypassed: `--no-verify`, `-c commit.gpgsign=false`, and similar are off-limits. If a hook fails, fix the underlying issue and make a new commit.
+
+### Pushing
+
+- Check `git remote -v`. If `origin` exists, `git push` after every milestone commit without asking. If no remote exists yet, skip the push silently — the commit is enough until `gh repo create` has been run.
+- Never `git push --force` or `git push --force-with-lease` without explicit user confirmation.
+- Never push commits whose subject starts with `WIP` or contains unresolved merge conflict markers.
+
+### First-time publish to GitHub
+
+When the repo is ready to go public (or private) for the first time:
 
 ```bash
-# Public repo, push current branch, set remote
+# Public
 gh repo create papers-explainer --public --source=. --remote=origin --push
 
 # Or private
 gh repo create papers-explainer --private --source=. --remote=origin --push
 ```
 
-Afterwards, subsequent work flows through regular pull requests. The `git-github-expert` agent will help compose PR descriptions that follow the repo's conventional-commit style.
+After that, subsequent work uses plain `git push origin <branch>`. For shared branches or feature branches destined for a pull request, the `git-github-expert` agent will help compose PR bodies that follow the repo's conventional-commit style — but the one-commit-per-milestone + push-on-remote-exists cadence above applies regardless of whether a PR is opened.
 
 ## Future extensions (not in scope yet)
 
