@@ -1,0 +1,28 @@
+# Python dependencies for the paper simulation notebooks.
+#
+# Local installation: `pip install -r requirements.txt` from the repo root.
+# Colab users: each notebook's first cell runs `!pip install -q ...` for the
+# dependencies it actually needs, so Colab reads this file only for reference.
+#
+# rdrobust is pinned exactly to 1.3.0 (the current PyPI release as of
+# 2026-04-22). The R version is at 3.0.0, so the Python port lags by two major
+# versions. Features used by paper 03 (bwselect in {mserd, cerrd}, p in {1, 2},
+# Conventional / Bias-Corrected / Robust inference rows) are all present in 1.3.0;
+# newer features introduced in R 2.x / 3.x are not yet available in Python.
+# When a future paper needs a feature added after 1.3.0, either bump the pin or
+# hand-roll the missing piece.
+
+# Core scientific stack
+numpy>=1.24,<2.0
+pandas>=2.0,<3.0
+scipy>=1.11
+matplotlib>=3.7
+
+# Econometrics
+statsmodels>=0.14       # paper 01 hand-rolled DiD
+linearmodels>=6.0       # paper 02 2SLS with saturated specs
+rdrobust==1.3.0         # paper 03 RDD — pinned exactly, see header note above
+
+# Notebook tooling (useful locally; pre-installed on Colab)
+jupyter>=1.0
+nbconvert>=7.0
