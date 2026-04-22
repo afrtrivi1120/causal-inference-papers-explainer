@@ -119,7 +119,7 @@ The difference is the extra `Var(Z | X = x)` factor in the TSLS weights. If `Var
 
 ## 11. Runnable example
 
-[`simulation.R`](simulation.R) simulates a population with:
+[`simulation.ipynb`](simulation.ipynb) simulates a population with:
 
 - binary covariate `X`;
 - conditionally-random instrument `Z`: `P(Z=1 | X=0) = 0.15`, `P(Z=1 | X=1) = 0.55`;
@@ -128,28 +128,32 @@ The difference is the extra `Var(Z | X = x)` factor in the TSLS weights. If `Var
 - complier shares 0.20 at `X=0` and 0.60 at `X=1`;
 - true population LATE (complier-mass weighted) = **0.75**.
 
-Over 500 Monte Carlo draws (N = 5000 each), the script compares three estimators:
+Over 500 Monte Carlo draws (N = 5000 each), the notebook compares three estimators:
 
-1. **Unsaturated TSLS** — `ivreg(Y ~ D + X | Z + X)`.
+1. **Unsaturated TSLS** — `IV2SLS(Y ~ D + X | Z + X)`.
 2. **Saturated stratum Wald**, pooled by estimated complier mass.
 3. **Saturated full-interaction TSLS**, aggregated identically.
 
-Representative output (seed `20260421`):
+Representative output (seed `20260421`, numpy RNG):
 
 ```
-True population LATE                    = 0.750
-Unsaturated TSLS                mean    = 0.442   (bias = −0.308)
-Saturated (stratum Wald pooled) mean    = 0.751   (bias =  0.001)
-Saturated (full interaction)    mean    = 0.751   (bias =  0.001)
+True population LATE                      = 0.750
+Unsaturated TSLS                  mean    = 0.439   (bias = −0.311)
+Saturated (stratum Wald pooled)   mean    = 0.747   (bias = −0.003)
+Saturated (full interaction)      mean    = 0.747   (bias = −0.003)
 ```
 
-The plot at `figures/tsls-vs-late.png` shows the sampling distribution of all three estimators side by side with the true LATE. The saturated distributions are centered on 0.75; the unsaturated distribution is centered *41% lower* because it mixes the two stratum LATEs with the wrong weights.
+The inline matplotlib figure shows the sampling distribution of all three estimators side by side with the true LATE. The saturated distributions are centered on 0.75; the unsaturated distribution is centered *~40% lower* because it mixes the two stratum LATEs with the wrong weights.
 
-Run it:
+The Colab badge at the top of the notebook runs all of this in a free cloud kernel — no install required. Locally:
 
 ```bash
-Rscript simulation.R
+pip install -r requirements.txt
+jupyter nbconvert --to notebook --execute --inplace \
+  papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.ipynb
 ```
+
+Numerical values differ slightly from the retired R version's output (preserved at the [`v0-r-era`](../../../) tag) because numpy's MT19937 and R's Mersenne Twister diverge bit-for-bit at the same seed. The qualitative pattern — unsaturated 40% off, both saturated estimators hit the true LATE — reproduces faithfully.
 
 ## 12. Further reading
 

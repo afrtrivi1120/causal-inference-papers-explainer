@@ -116,13 +116,13 @@ Even the best-chosen RDD specification assumes:
 
 ## 11. Runnable example
 
-[`simulation.R`](simulation.R) simulates a sharp RDD with:
+[`simulation.ipynb`](simulation.ipynb) simulates a sharp RDD with:
 
 - running variable `X ~ Uniform(-1, 1)`, cutoff at 0;
 - a conditional mean `μ(X) = 0.5 + 3X + 50X² + 80X³` — deliberately strong curvature near the cutoff so the paper's warning case is live;
 - true sharp treatment effect `τ = 0.5` at the cutoff.
 
-Over 500 Monte Carlo draws of N = 600 each, it runs six specifications through `rdrobust::rdrobust`:
+Over 500 Monte Carlo draws of N = 600 each, it runs six specifications through `rdrobust-python` (pinned at `==1.3.0`):
 
 | Spec | Bandwidth | Inference |
 |------|-----------|-----------|
@@ -133,16 +133,16 @@ Over 500 Monte Carlo draws of N = 600 each, it runs six specifications through `
 | p = 2 | MSE-optimal | Robust (BC) |
 | p = 2 | CER-optimal | Robust (BC) |
 
-Representative output (seed `20260421`):
+Representative output (seed `20260421`, numpy RNG):
 
 ```
 Spec                             est     bias  coverage  CI width
-p=1, MSE-opt, Conventional      0.483  −0.017    0.92      0.64
-p=1, MSE-opt, Robust (BC)       0.531   0.031    0.94      0.75
-p=1, CER-opt, Conventional      0.492  −0.008    0.92      0.76
-p=1, CER-opt, Robust (BC)       0.519   0.019    0.93      0.82
-p=2, MSE-opt, Robust (BC)       0.498  −0.002    0.95      0.66
-p=2, CER-opt, Robust (BC)       0.495  −0.005    0.92      0.78
+p=1, MSE-opt, Conventional      0.498  −0.002    0.92      0.64
+p=1, MSE-opt, Robust (BC)       0.545   0.045    0.93      0.74
+p=1, CER-opt, Conventional      0.509   0.009    0.91      0.76
+p=1, CER-opt, Robust (BC)       0.533   0.033    0.93      0.82
+p=2, MSE-opt, Robust (BC)       0.509   0.009    0.93      0.66
+p=2, CER-opt, Robust (BC)       0.508   0.008    0.92      0.78
 ```
 
 Two things to read off this table honestly:
@@ -152,18 +152,22 @@ Two things to read off this table honestly:
 
 Under the paper's experimental benchmark, the combined evidence — better coverage plus smaller bias — favors **CER-optimal + Robust** as the safer default whenever curvature is a concern.
 
-Two diagnostic images are written:
+Two diagnostic plots render inline in the notebook:
 
-- `figures/rdd-bandwidths.png` — the raw scatter, the true conditional mean, and the MSE-optimal and CER-optimal bandwidth windows shaded so you can see the narrower CER window.
-- `figures/rdd-coverage.png` — coverage bars across all six specifications with the nominal 0.95 marked.
+1. A scatter of the raw draw with the true conditional mean overlaid, plus the MSE-optimal and CER-optimal bandwidth windows shaded — so you can see the narrower CER window.
+2. Coverage bars across all six specifications with the nominal 0.95 marked.
 
-Run it:
+Run it — the Colab badge at the top of the notebook launches it in a free cloud kernel (the first cell pins `rdrobust==1.3.0`, which is not pre-installed on Colab, via `!pip install -q`). Locally:
 
 ```bash
-Rscript simulation.R
+pip install -r requirements.txt
+jupyter nbconvert --to notebook --execute --inplace \
+  papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.ipynb
 ```
 
-Change the coefficients of `mu(x)` at the top of the script to soften or sharpen the curvature and see how the coverage gap opens or closes.
+Change the coefficients of `mu(x)` at the top of the notebook to soften or sharpen the curvature and see how the coverage gap opens or closes.
+
+Numerical values differ slightly from the retired R simulation's output (preserved at the [`v0-r-era`](../../../) tag) because numpy's MT19937 and R's Mersenne Twister diverge bit-for-bit at the same seed. Coverage and bias patterns — Conventional under-covers at MSE-opt, Robust (BC) hits closer to nominal — reproduce faithfully across languages.
 
 ## 12. Further reading
 
