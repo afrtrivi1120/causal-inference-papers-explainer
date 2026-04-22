@@ -40,33 +40,40 @@ Papers are organized by methodology. The taxonomy we plan to cover includes **RC
 Each paper folder contains:
 
 - **`README.md`** — a plain-language explainer (TL;DR → glossary → intuition → method → assumptions → results → takeaways).
-- **`simulation.R`** — a self-contained R script that defines a data-generating process with a *known* treatment effect, runs the estimator(s) the paper discusses, prints "truth vs estimate", and renders at least one diagnostic plot.
+- **`simulation.ipynb`** — a self-contained Jupyter notebook that defines a data-generating process with a *known* treatment effect, runs the estimator(s) the paper discusses, prints "truth vs estimate", and renders at least one diagnostic plot. An **"Open in Colab"** badge at the top opens the notebook in a free cloud kernel — no clone, no local install.
 - **`references.md`** — citation, link to the official version, and 3–5 adjacent readings.
 
-Start with the README. When you want to see the method "in motion", run `simulation.R`.
+Start with the README. When you want to see the method "in motion", open `simulation.ipynb` on GitHub (which renders the notebook inline with plots + outputs) or click the Colab badge at the top of the notebook to run every cell yourself.
 
-## How to run the R code
+## How to run the notebooks
+
+**Primary path — Colab, no local install.** Open any paper's `simulation.ipynb` on GitHub, click the "Open in Colab" badge at the top, and hit *Runtime → Run all*. The first cell runs `!pip install -q ...` for the non-pre-installed dependencies (pinned versions); from there each cell runs against Colab's free kernel.
+
+**Escape hatch — local Jupyter.** From the repo root:
 
 ```bash
-# From the repo root
-Rscript papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R
+pip install -r requirements.txt
+jupyter lab papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
-**Requirements:** R ≥ 4.3. Packages (loaded via `shared/r-setup.R`):
+Or headless re-execution (useful for verifying a fresh run reproduces the committed outputs):
 
-```
-tidyverse, AER, rdrobust, ggplot2
-```
-
-Install anything missing with:
-
-```r
-install.packages(c("tidyverse", "AER", "rdrobust", "ggplot2"))
+```bash
+jupyter nbconvert --to notebook --execute --inplace \
+  papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
-Future papers may add to this list; `shared/r-setup.R` is the source of truth.
+**Requirements:** Python ≥ 3.10. Pinned top-level dependencies live in [`requirements.txt`](requirements.txt):
 
-Every simulation is seeded (`set.seed(20260421)` in `shared/r-setup.R`) so re-running gives identical numbers. Each script exposes an `N_SIM` constant near the top so you can throttle Monte Carlo work for quick iteration.
+```
+numpy, pandas, scipy, matplotlib, statsmodels, linearmodels, rdrobust==1.3.0, jupyter, nbconvert
+```
+
+`rdrobust` is pinned exactly at `1.3.0` (the Python port lags the R package by two major versions; this pin keeps rendered outputs reproducible and flags future version bumps as explicit decisions).
+
+Every notebook seeds its RNG with `np.random.default_rng(20260421)` so re-running gives identical numbers *within Python*. Numerical values will differ from the retired R simulations (numpy's PRNG stream is not bitwise identical to R's Mersenne Twister at the same seed) — the qualitative pattern is what reproduces across languages. The retired R simulation stack is preserved at the [`v0-r-era`](../../releases/tag/v0-r-era) git tag for cross-checking.
+
+Each notebook exposes an `N_SIM` constant near the top so you can throttle Monte Carlo work for quick iteration.
 
 ## How to add a new paper
 
@@ -74,11 +81,11 @@ See [`CLAUDE.md`](CLAUDE.md) for the full pipeline. In short:
 
 1. Drop the PDF in the repo root (it will be gitignored).
 2. Create a new folder `papers/<method>/NN-<first-authors>-<short-topic>/`, where `<method>` is one of the kebab-case buckets (`did`, `iv`, `rdd`, `rct`, `synthetic-control`, `causal-ai`, ...). Create the bucket folder if it is the first paper in that category.
-3. Use the four project subagents in `.claude/agents/` in order — causal-inference-expert → causal-inference-professor → r-coding-expert → git-github-expert.
+3. Use the four project subagents in `.claude/agents/` in order — causal-inference-expert → causal-inference-professor → simulation-notebook-expert → git-github-expert.
 4. Update the contents section above — add the row under the appropriate methodology sub-heading (or add a new sub-heading if this is the first paper in its bucket).
 
 ## Licensing and sources
 
-- Code in this repo: MIT (see header in each `.R` file).
+- Code in this repo: MIT.
 - Written explainers: CC-BY-4.0 — reuse them, attribute this repo.
 - The source PDFs themselves are **not** redistributed here. Each paper's `references.md` links to the official or arXiv version.
