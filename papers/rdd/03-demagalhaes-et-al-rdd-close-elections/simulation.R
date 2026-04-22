@@ -29,7 +29,7 @@
 .file <- .args[grepl("^--file=", .args)]
 if (length(.file) > 0) setwd(dirname(sub("^--file=", "", .file[1])))
 
-source("../../shared/r-setup.R")
+source("../../../shared/r-setup.R")
 
 # -------- Parameters -------------------------------------------------------
 N_SIM    <- 500

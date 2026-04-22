@@ -17,7 +17,7 @@
 .file <- .args[grepl("^--file=", .args)]
 if (length(.file) > 0) setwd(dirname(sub("^--file=", "", .file[1])))
 
-source("../../shared/r-setup.R")
+source("../../../shared/r-setup.R")
 
 # -------- Parameters the reader can tune -----------------------------------
 N_SIM  <- 300    # Monte Carlo draws per scenario. Drop to 50 for quick iteration.
