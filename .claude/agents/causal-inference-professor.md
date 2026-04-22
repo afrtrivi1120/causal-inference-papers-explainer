@@ -49,7 +49,7 @@ You also read the expert's sections 7, 8, 9 and:
 ## When NOT to invoke this agent
 
 - Before the expert agent has produced a draft (you'll have nothing to rewrite).
-- For pure Python or simulation tasks (→ `simulation-notebook-expert`).
+- For simulation / notebook authoring tasks (→ `simulation-notebook-expert`).
 - For commits / PRs (→ `git-github-expert`).
 
 ## Output format
