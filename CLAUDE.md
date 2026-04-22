@@ -14,13 +14,13 @@ Build plain-language explainers of methodological causal-inference papers, paire
 ├── CLAUDE.md                # This file
 ├── .gitignore
 ├── .claude/agents/          # Project subagents (see "Subagent routing")
-├── shared/r-setup.R         # Common package loader + seed
+├── requirements.txt         # Python dependency declaration (pinned where it matters)
 ├── papers/
 │   └── <method>/            # Methodology bucket: did, iv, rdd, rct, synthetic-control, causal-ai, ...
 │       └── NN-<first-authors>-<short-topic>/
-│           ├── README.md    # The explainer (12-section template below)
-│           ├── simulation.R # Runnable simulation (methodological papers only)
-│           └── references.md # Citation + adjacent reading
+│           ├── README.md        # The explainer (12-section template below)
+│           ├── simulation.ipynb # Runnable Jupyter notebook (methodological papers only; Colab badge at top)
+│           └── references.md    # Citation + adjacent reading
 ├── docs/
 │   ├── plans/               # Implementation plans (ce:plan output)
 │   └── solutions/           # Documented solutions to past problems (runtime errors,
@@ -55,19 +55,23 @@ Every `papers/<method>/NN-*/README.md` MUST follow this structure, in this order
 8. **Assumptions and when they fail** — bulleted, blunt about failure modes.
 9. **What the authors find** — their main results.
 10. **What this means for a practitioner** — what a user of the method should actually do differently after reading.
-11. **Runnable example** — short description of the DGP in `simulation.R` and what its output shows.
+11. **Runnable example** — short description of the DGP in `simulation.ipynb` and what its output shows. Mention the Colab badge so readers know they can run the simulation in-browser.
 12. **Further reading** — 3–5 adjacent papers or textbook chapters.
 
-## R conventions
+## Notebook conventions
 
-- Every `simulation.R` begins with a short **script-dir preamble** that uses `commandArgs(trailingOnly = FALSE)` + `--file=` to chdir into the script's own directory, then sources `../../../shared/r-setup.R` (three levels up: `<paper>/`, `<method>/`, `papers/`). This makes `Rscript papers/<method>/NN-*/simulation.R` work whether it's invoked from the repo root or from the paper folder. Copy the 4-line preamble from any existing paper; do not reinvent it.
-- `shared/r-setup.R` sets `set.seed(20260421)`. Per-script overrides are fine but should be explicit — and when the script consumes RNG via a Monte Carlo loop, re-anchor with `set.seed(20260421)` before any "representative" plot draws (see papers 01 and 03).
-- Use **tidyverse** (dplyr, ggplot2, purrr) for data manipulation and plotting. `data.table` is fine if a specific script benefits from it — document why at the top.
-- Expose an `N_SIM` constant near the top of each script so readers can throttle Monte Carlo draws for quick iteration.
-- Always print a **truth vs. estimate** comparison.
-- Always render **at least one diagnostic plot** (`ggplot2` preferred), saved to `papers/<method>/NN-*/figures/` via `dir.create("figures", showWarnings = FALSE)` + `ggsave("figures/...")`. The `figures/` directory is gitignored.
-- When a package is missing, emit a clear install hint — do not fail with a raw traceback. `shared/r-setup.R` already handles this for the standard package list.
-- No secrets, no API keys, no hard-coded absolute paths. Everything must run on a clean machine after `install.packages(...)`.
+- Every `simulation.ipynb` opens with a **markdown title cell** that includes a one-line paper citation, an "Open in Colab" badge linking to the notebook's raw GitHub URL (branch `master`), a one-paragraph "what this simulation shows" hook, and a one-paragraph DGP summary.
+- The **setup code cell** runs in this exact order: (1) `import warnings; warnings.filterwarnings('ignore', category=UserWarning)` FIRST, before anything else — some transitive imports (e.g. `linearmodels → pandas`) would otherwise emit noisy UserWarnings that land in committed outputs; (2) defensive `try: import X except ImportError: subprocess pip install -q X==PIN` for any dep not in Colab's default stack; (3) imports; (4) `SEED = 20260421; rng = np.random.default_rng(SEED)`; (5) a version print block.
+- **Do not pip-install Colab-pre-installed deps** (numpy, pandas, scipy, matplotlib, statsmodels). Do pin and install anything else exactly — `rdrobust==1.3.0`, `linearmodels>=6.0`. Matching pins live in `requirements.txt` at the repo root.
+- Use `numpy` + `pandas` + `matplotlib` as the default stack. `plotnine` is allowed only if the comparison with R prose benefits; default to matplotlib for GitHub-render reliability.
+- Expose an `N_SIM` constant near the top of each notebook so readers can throttle Monte Carlo draws for quick iteration.
+- Always print a **truth vs. estimate** comparison (as a `pd.DataFrame` or similarly readable structure).
+- Always render **at least one diagnostic plot** via `matplotlib` + `plt.show()`. Plots render inline; do **not** save to disk with `plt.savefig` — Colab's filesystem is ephemeral and the point is inline rendering in GitHub's `.ipynb` viewer.
+- Re-anchor the RNG with `rng_plot = np.random.default_rng(SEED)` before any "representative" plot draw, because the MC loop consumes an `N_SIM`-dependent amount of RNG state.
+- **Label-safe lookups.** When an estimator returns a structured object with labeled rows (e.g. `rdrobust` returns "Conventional"/"Bias-Corrected"/"Robust" rows), index by label via `.loc[label, col]` with an assertion that the expected labels exist. Never positional indexing — a future package release could reorder rows and silently return the wrong number.
+- **Commit notebooks with rendered outputs.** Use `jupyter nbconvert --to notebook --execute --inplace <path>` to produce the final version; GitHub's `.ipynb` viewer shows the full reader experience without requiring execution.
+- **Reproducibility note** in every notebook's punchline: numpy's MT19937 stream differs bitwise from R's Mersenne Twister at the same seed, so exact numerical values differ across languages — the qualitative pattern is what reproduces. The retired R simulation stack is preserved at the `v0-r-era` git tag for cross-checking.
+- No secrets, no API keys, no hard-coded absolute paths. Everything must run on a fresh Colab kernel after the in-notebook `pip install`, or locally after `pip install -r requirements.txt`.
 
 ## Subagent routing
 
@@ -77,12 +81,12 @@ Four project-scoped subagents live in `.claude/agents/`. Invoke them in this ord
 |------|-------|------|-----|
 | 1 | `causal-inference-expert` | Resolve the `<method>` bucket and create `papers/<method>/` if it's the first paper in that category. Scaffold `papers/<method>/NN-*/README.md` + `references.md`. Sections 1 (Citation), 5 (Glossary), 7 (Method), 8 (Assumptions), 9 (Findings). | Technical accuracy + bucket routing. Reads the PDF or source, extracts the estimand, picks the bucket slug from the estimator, extracts identification argument, assumptions, and results. Writes to disk directly (has `Write` + `Edit`). |
 | 2 | `causal-inference-professor` | Sections 2 (TL;DR), 4 (Causal question), 5 (Glossary rewrite), 6 (Core idea), 10 (Practitioner takeaway). | Pedagogy. Edits the README in place via `Edit`; keeps math minimal in prose while preserving correctness. Does NOT add new Glossary terms the expert has not defined. |
-| 3 | `r-coding-expert` | `simulation.R` + section 11 (Runnable example) in `README.md`. | Simulation. Produces `simulation.R` following the R conventions above, runs it with `Rscript` to confirm it executes end-to-end, writes section 11 into the README, and updates `shared/r-setup.R` / top-level `README.md` if it needs a new package. |
+| 3 | `simulation-notebook-expert` | `simulation.ipynb` + section 11 (Runnable example) in `README.md`. | Simulation. Produces `simulation.ipynb` following the Notebook conventions above, runs it with `jupyter nbconvert --execute --inplace` to produce the final version with rendered outputs, writes section 11 into the README, and updates `requirements.txt` / top-level `README.md` if it needs a new package. |
 | 4 | `git-github-expert` | Contents table in top-level `README.md`. `.gitignore`. Commit history. | Repository hygiene. Stages only files for the paper being added, writes a conventional commit, and prepares `gh repo create` / `gh pr create` instructions when the user is ready to push. |
 
-Pipeline order is strict: expert → professor → R coder → git. The R coder depends on the professor's section-6 narrative for the section-11 framing; the git agent will refuse to commit a folder with `TODO:` placeholders in any 12-section slot.
+Pipeline order is strict: expert → professor → simulation-notebook-expert → git. The notebook-expert depends on the professor's section-6 narrative for the section-11 framing; the git agent will refuse to commit a folder with `TODO:` placeholders in any 12-section slot.
 
-Rule of thumb: the expert drafts, the professor rewrites, the R coder verifies, the git expert ships.
+Rule of thumb: the expert drafts, the professor rewrites, the notebook-expert verifies, the git expert ships.
 
 ## Do not
 
@@ -90,33 +94,49 @@ Rule of thumb: the expert drafts, the professor rewrites, the R coder verifies, 
 - **Do not paste verbatim paper text** into explainers. Paraphrase.
 - **Do not skip the Glossary** — even for "obvious" terms like *cutoff* or *instrument*.
 - **Do not claim a method is "the" answer.** Every method has failure modes; name them in section 8.
-- **Do not let simulation scripts print nothing.** Readers should be able to run `Rscript simulation.R` and *see* the punchline.
+- **Do not let simulation notebooks print nothing.** Readers should be able to open `simulation.ipynb` on GitHub and *see* the punchline — truth-vs-estimate DataFrame, at least one plot, and a closing markdown cell summarizing the result.
 
 ## Adding a new paper — checklist
 
 - [ ] PDF dropped in repo root (will be gitignored).
 - [ ] Folder `papers/<method>/NN-<first-authors>-<short-topic>/` created. The `causal-inference-expert` agent owns bucket resolution (picking `<method>` from the estimator) and creates `papers/<method>/` if it's the first paper in that category — you do not need to pick the slug yourself before invoking the pipeline.
 - [ ] `references.md` with full citation + link.
-- [ ] Subagent pipeline run end-to-end (expert → professor → R coder → git).
-- [ ] `Rscript papers/<method>/NN-*/simulation.R` runs to completion (for methodological papers).
+- [ ] Subagent pipeline run end-to-end (expert → professor → simulation-notebook-expert → git).
+- [ ] `jupyter nbconvert --to notebook --execute --inplace papers/<method>/NN-*/simulation.ipynb` exits 0, with rendered outputs in the committed file (for methodological papers).
 - [ ] Top-level `README.md` contents table updated with a real 1-line takeaway.
 - [ ] Conventional commit on its own (e.g., `feat(papers): add paper NN on <topic>`).
 
 ## Running the simulations
 
-From the repo root:
+Two paths for the reader:
+
+**Colab (primary — no local install).** Open any of the three paper notebooks on github.com:
+
+- [`papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb`](papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb)
+- [`papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.ipynb`](papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.ipynb)
+- [`papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.ipynb`](papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.ipynb)
+
+Each notebook has an "Open in Colab" badge at the top. Click it; the notebook opens in a free Colab kernel. The first cell runs `!pip install -q ...` for the non-pre-installed deps, then Run All. No Google-Drive mount required, no local Python needed.
+
+**Local Jupyter (escape hatch).** From the repo root:
 
 ```bash
-Rscript papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R
-Rscript papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.R
-Rscript papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.R
+pip install -r requirements.txt
+jupyter lab papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
+```
+
+Or headless re-execution (useful for CI / sanity checks):
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace \
+  papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
 Troubleshooting:
 
-- *"there is no package called X"* — run the `install.packages(...)` line that `shared/r-setup.R` printed.
-- *Simulation feels slow* — each script exposes an `N_SIM` constant; set it to a small number (e.g., 50) for quick iteration.
-- *Different numbers than expected* — verify you haven't changed `set.seed(...)` upstream.
+- *`ModuleNotFoundError`* — run `pip install -r requirements.txt` from the repo root, or re-run the notebook's first cell in Colab to trigger its defensive `!pip install`.
+- *Simulation feels slow* — each notebook exposes an `N_SIM` constant near the top; drop it to 50 for quick iteration.
+- *Different numbers than expected* — verify `SEED = 20260421` hasn't been changed, and check the version-print cell at the top for library-version drift. Exact values differ between the Python notebooks and the retired R simulations because numpy's RNG ≠ R's Mersenne Twister; the qualitative pattern is what's guaranteed to reproduce. The retired R stack is preserved at the `v0-r-era` git tag.
 
 ## Committing, pushing, and publishing
 
@@ -130,7 +150,7 @@ One commit per logical change, landed as soon as the change is coherent and veri
 |---|---|
 | Repo scaffold lands (a new convention in `CLAUDE.md`, a new `shared/` helper, a `.gitignore` update) | `feat(repo): ...`  ·  `chore(repo): ...` |
 | A subagent definition is added or meaningfully reshaped | `feat(agents): ...`  ·  `fix(agents): ...` |
-| A paper folder is complete (`README.md` + `simulation.R` + `references.md`, all sections filled, simulation runs clean) | `feat(papers/<method>/NN): add paper NN — <short topic>` |
+| A paper folder is complete (`README.md` + `simulation.ipynb` + `references.md`, all sections filled, notebook executes clean with rendered outputs) | `feat(papers/<method>/NN): add paper NN — <short topic>` |
 | A review-fix batch lands (one batch per ce:review run, not one per finding) | `fix: apply ce:review batch N (...)` |
 | A new learning is captured via ce:compound | `docs(solutions): ...` |
 | A plan is added or its checkboxes are flipped | `chore(repo): mark plan units complete`  ·  `docs(plans): ...` |
@@ -142,7 +162,7 @@ Stage only the files that belong in the commit — never `git add .`, never `git
 
 Before running `git commit`, Claude verifies:
 
-- The relevant `simulation.R` files exit 0 under `Rscript` (for changes that touch simulations).
+- The relevant `simulation.ipynb` files execute 0 under `jupyter nbconvert --to notebook --execute --inplace` (for changes that touch simulations), and the re-rendered outputs are staged alongside source edits.
 - No `TODO:` placeholder survives in any 12-section slot of a paper README.
 - `git check-ignore *.pdf` confirms PDFs remain untracked.
 - Hooks are not bypassed: `--no-verify`, `-c commit.gpgsign=false`, and similar are off-limits. If a hook fails, fix the underlying issue and make a new commit.
@@ -170,5 +190,5 @@ After that, subsequent work uses plain `git push origin <branch>`. For shared br
 ## Future extensions (not in scope yet)
 
 - Spanish translations of explainers (dual-language folders).
-- CI that re-runs `simulation.R` files on PR to catch broken scripts.
+- CI that re-runs `simulation.ipynb` notebooks on PR (via `jupyter nbconvert --execute`) to catch broken notebooks.
 - Notebook companions (`.Rmd` / Quarto) rendered to HTML for blog-style reading.
