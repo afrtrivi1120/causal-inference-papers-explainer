@@ -47,12 +47,19 @@ Start with the README. When you want to see the method "in motion", open `simula
 
 ## How to run the notebooks
 
-**Primary path — Colab, no local install.** Open any paper's `simulation.ipynb` on GitHub, click the "Open in Colab" badge at the top, and hit *Runtime → Run all*. The first cell runs `!pip install -q ...` for the non-pre-installed dependencies (pinned versions); from there each cell runs against Colab's free kernel.
+**Primary path — Colab, no local install.** Open any paper's `simulation.ipynb` on GitHub, click the "Open in Colab" badge at the top, pick *Runtime → Change runtime type → R* once per session, then hit *Runtime → Run all*. The first cell runs `install.packages(...)` for any dep not pre-installed on Colab's R runtime (typically `AER` for paper 02 and `rdrobust` for paper 03).
 
-**Escape hatch — local Jupyter.** From the repo root:
+**Escape hatch — local Jupyter.** R ≥ 4.3 with `IRkernel` registered once:
+
+```r
+install.packages("IRkernel")
+IRkernel::installspec(user = TRUE)
+install.packages(c("tidyverse", "AER", "rdrobust"))
+```
+
+Then open any notebook:
 
 ```bash
-pip install -r requirements.txt
 jupyter lab papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
@@ -63,17 +70,13 @@ jupyter nbconvert --to notebook --execute --inplace \
   papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
-**Requirements:** Python ≥ 3.10. Pinned top-level dependencies live in [`requirements.txt`](requirements.txt):
+**Requirements:** R ≥ 4.3 plus these packages (each notebook's setup cell installs what it needs):
 
 ```
-numpy, pandas, scipy, matplotlib, statsmodels, linearmodels, rdrobust==1.3.0, jupyter, nbconvert
+tidyverse, AER, rdrobust, ggplot2
 ```
 
-`rdrobust` is pinned exactly at `1.3.0` (the Python port lags the R package by two major versions; this pin keeps rendered outputs reproducible and flags future version bumps as explicit decisions).
-
-Every notebook seeds its RNG with `np.random.default_rng(20260421)` so re-running gives identical numbers *within Python*. Numerical values will differ from the retired R simulations (numpy's PRNG stream is not bitwise identical to R's Mersenne Twister at the same seed) — the qualitative pattern is what reproduces across languages. The retired R simulation stack is preserved at the [`v0-r-era`](../../releases/tag/v0-r-era) git tag for cross-checking.
-
-Each notebook exposes an `N_SIM` constant near the top so you can throttle Monte Carlo work for quick iteration.
+Every notebook calls `set.seed(20260421)` so re-running gives identical numbers. Each notebook exposes an `N_SIM` constant near the top so you can throttle Monte Carlo work for quick iteration.
 
 ## How to add a new paper
 

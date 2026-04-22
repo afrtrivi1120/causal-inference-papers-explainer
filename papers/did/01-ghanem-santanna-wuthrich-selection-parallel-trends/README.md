@@ -117,27 +117,25 @@ The bias decomposes cleanly: `bias = rho · (E[v | D=1] − E[v | D=0])`. Both `
 
 A second note about the numbers: with `TAU = 1.5` and `v ~ N(0, 1)` the treatment share is roughly 93% — an intentionally imbalanced split that amplifies the Scenario B bias. Setting `TAU = 0` in the notebook gives a 50/50 split and shrinks the bias accordingly without changing the qualitative story.
 
-The notebook prints a summary DataFrame and renders an inline matplotlib figure showing treated/control group means plus the treated group's counterfactual `Y(0)` trend, so you can see exactly where the "trend gap" emerges in Scenario B.
+The notebook prints a summary tibble and renders an inline ggplot2 figure showing treated/control group means plus the treated group's counterfactual `Y(0)` trend, so you can see exactly where the "trend gap" emerges in Scenario B.
 
 Run it — two options:
 
 ```bash
-# Preferred: click the Colab badge at the top of simulation.ipynb. No install needed.
+# Preferred: click the Colab badge at the top of simulation.ipynb. Pick
+# Runtime -> Change runtime type -> R once, then Runtime -> Run all.
 
-# Or locally, from the repo root:
-pip install -r requirements.txt
+# Or locally, from the repo root (requires R >= 4.3 with IRkernel registered):
 jupyter nbconvert --to notebook --execute --inplace \
   papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
-Representative output (seed `20260421`, numpy RNG):
+Representative output (seed `20260421`):
 
 ```
-Scenario A: mean_DiD_estimate ≈ 1.65   mean_bias ≈ -0.002
-Scenario B: mean_DiD_estimate ≈ 3.61   mean_bias ≈  1.96
+Scenario A: mean_DiD_estimate ≈ 1.64   mean_bias ≈ -0.002
+Scenario B: mean_DiD_estimate ≈ 3.60   mean_bias ≈  1.95
 ```
-
-Numerical values differ slightly from the retired R version's output (preserved at the [`v0-r-era`](../../../) tag) because numpy's MT19937 and R's Mersenne Twister diverge bit-for-bit at the same seed. The qualitative pattern — A unbiased, B biased by ~2 — reproduces faithfully.
 
 ## 12. Further reading
 

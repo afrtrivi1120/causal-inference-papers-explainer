@@ -130,30 +130,27 @@ The difference is the extra `Var(Z | X = x)` factor in the TSLS weights. If `Var
 
 Over 500 Monte Carlo draws (N = 5000 each), the notebook compares three estimators:
 
-1. **Unsaturated TSLS** — `IV2SLS(Y ~ D + X | Z + X)`.
+1. **Unsaturated TSLS** — `ivreg(Y ~ D + X | Z + X)`.
 2. **Saturated stratum Wald**, pooled by estimated complier mass.
 3. **Saturated full-interaction TSLS**, aggregated identically.
 
-Representative output (seed `20260421`, numpy RNG):
+Representative output (seed `20260421`):
 
 ```
-True population LATE                      = 0.750
-Unsaturated TSLS                  mean    = 0.439   (bias = −0.311)
-Saturated (stratum Wald pooled)   mean    = 0.747   (bias = −0.003)
-Saturated (full interaction)      mean    = 0.747   (bias = −0.003)
+True population LATE                    = 0.750
+Unsaturated TSLS                mean    = 0.442   (bias = −0.308)
+Saturated (stratum Wald pooled) mean    = 0.751   (bias =  0.001)
+Saturated (full interaction)    mean    = 0.751   (bias =  0.001)
 ```
 
-The inline matplotlib figure shows the sampling distribution of all three estimators side by side with the true LATE. The saturated distributions are centered on 0.75; the unsaturated distribution is centered *~40% lower* because it mixes the two stratum LATEs with the wrong weights.
+The inline ggplot2 figure shows the sampling distribution of all three estimators side by side with the true LATE. The saturated distributions are centered on 0.75; the unsaturated distribution is centered *41% lower* because it mixes the two stratum LATEs with the wrong weights.
 
-The Colab badge at the top of the notebook runs all of this in a free cloud kernel — no install required. Locally:
+Run it — the Colab badge at the top of the notebook launches it in a free cloud kernel (pick *Runtime → Change runtime type → R* once per session). Locally:
 
 ```bash
-pip install -r requirements.txt
 jupyter nbconvert --to notebook --execute --inplace \
   papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.ipynb
 ```
-
-Numerical values differ slightly from the retired R version's output (preserved at the [`v0-r-era`](../../../) tag) because numpy's MT19937 and R's Mersenne Twister diverge bit-for-bit at the same seed. The qualitative pattern — unsaturated 40% off, both saturated estimators hit the true LATE — reproduces faithfully.
 
 ## 12. Further reading
 
