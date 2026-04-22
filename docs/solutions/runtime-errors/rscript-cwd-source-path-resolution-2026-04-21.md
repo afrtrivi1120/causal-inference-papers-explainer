@@ -9,7 +9,7 @@ severity: high
 symptoms:
   - "Error in file(filename, \"r\", encoding = encoding): cannot open the connection"
   - "cannot open file '../../shared/r-setup.R': No such file or directory"
-  - "Rscript papers/NN-.../simulation.R from repo root exits immediately with no output"
+  - "Rscript papers/<method>/NN-.../simulation.R from repo root exits immediately with no output"
   - "figures/ directory and output PNGs written at repo root instead of inside the paper folder"
 root_cause: config_error
 resolution_type: code_fix
@@ -30,7 +30,7 @@ related_components:
 
 ## Problem
 
-Every `papers/NN-*/simulation.R` script opened with a bare `source("../../shared/r-setup.R")`, a path that R resolves against its **current working directory** at the moment the call executes — not against the script's own file location. The documented invocation in `README.md` and `CLAUDE.md` was `Rscript papers/NN-*/simulation.R` **from the repo root**, which meant R looked for `shared/r-setup.R` two directories *above* the repo root, found nothing, and halted immediately. The scripts only worked if the user first `cd`'d into the paper folder.
+Every `simulation.R` script at the time opened with a bare `source("../../shared/r-setup.R")`, a path that R resolves against its **current working directory** at the moment the call executes — not against the script's own file location. The documented invocation in `README.md` and `CLAUDE.md` was `Rscript papers/NN-*/simulation.R` **from the repo root**, which meant R looked for `shared/r-setup.R` two directories *above* the repo root, found nothing, and halted immediately. The scripts only worked if the user first `cd`'d into the paper folder. (The `papers/NN-*/` flat layout has since been reorganized into `papers/<method>/NN-*/` buckets, and the relative `source()` path accordingly deepened from `../../` to `../../../` — see the postscript at the end of this entry.)
 
 ## Symptoms
 
@@ -98,7 +98,7 @@ Applied to all three papers in commit `f2b16cd`. `CLAUDE.md` was updated in the 
 
 ## Prevention
 
-1. **Test the exact documented invocation, not a wrapper around it.** `(cd "$dir" && Rscript simulation.R)` and `Rscript papers/NN-*/simulation.R` look similar but are semantically different the moment the script uses any relative path. In CI and in project verification scripts, run the literal command from the user-facing docs — do not abstract it into a helper that pre-`cd`'s.
+1. **Test the exact documented invocation, not a wrapper around it.** `(cd "$dir" && Rscript simulation.R)` and `Rscript papers/<method>/NN-*/simulation.R` look similar but are semantically different the moment the script uses any relative path. In CI and in project verification scripts, run the literal command from the user-facing docs — do not abstract it into a helper that pre-`cd`'s.
 
 2. **Use the chdir preamble whenever a script has `source(...)` or relative-path file I/O and is meant to be invokable from multiple directories.** Copy it from an existing `simulation.R`; do not reinvent it every time. `CLAUDE.md` codifies this as a convention for this repo.
 
@@ -113,12 +113,16 @@ Applied to all three papers in commit `f2b16cd`. `CLAUDE.md` was updated in the 
 
    For a dependency-minimal repo where scripts are small and standalone, the 4-line base-R preamble is the right fit. For long-lived tidyverse projects with many scripts, `here::here()` is worth considering.
 
-4. **Structurally align "how we test" with "how we document."** The root cause of this bug surviving a full verification pass was that the verification script used a subtly different invocation than the one documented. If the docs say `Rscript papers/NN-*/simulation.R`, the verification script should run that literal command from the repo root — not a subshell wrapper, not a Makefile that first `cd`'s. Otherwise the test suite guarantees one thing and the user experiences another.
+4. **Structurally align "how we test" with "how we document."** The root cause of this bug surviving a full verification pass was that the verification script used a subtly different invocation than the one documented. If the docs say `Rscript papers/<method>/NN-*/simulation.R`, the verification script should run that literal command from the repo root — not a subshell wrapper, not a Makefile that first `cd`'s. Otherwise the test suite guarantees one thing and the user experiences another.
 
 ## Related Issues
 
 - `CLAUDE.md` lines ~55–62 — the repo's authoritative R conventions now mandate the preamble and describe the `figures/` handling that depends on it.
 - `.claude/agents/r-coding-expert.md` — the subagent that writes new `simulation.R` files has been instructed to copy the preamble verbatim from any existing paper and never reinvent it.
-- `papers/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R` — canonical reference implementation; lines immediately after the file header.
+- `papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R` — canonical reference implementation; lines immediately after the file header.
 - ce:review finding **COR-01** (correctness reviewer, run `20260421-175010-3b900f41`), which surfaced the bug independently of the author's own verification pass.
 - No prior `docs/solutions/` entries existed on this problem (this is the repo's first learning).
+
+## Postscript — 2026-04-22 path-depth update
+
+On 2026-04-22 the `papers/NN-*/` flat layout was reorganized into `papers/<method>/NN-*/` methodology buckets (commit `b19d313`). The `commandArgs(--file=)` preamble itself is location-independent and survived the move byte-identical. Only the one line below it changed: `source("../../shared/r-setup.R")` became `source("../../../shared/r-setup.R")` so the script still reaches `shared/r-setup.R` from its new three-levels-deep location. The historical **Before / After** code block above is preserved verbatim because it documents the fix as it landed on 2026-04-21 (commit `f2b16cd`) — read it as "how the preamble looked when it was introduced", not as the current canonical code. The current canonical code is at `papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R`.

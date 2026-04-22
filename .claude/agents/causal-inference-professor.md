@@ -54,7 +54,7 @@ You also read the expert's sections 7, 8, 9 and:
 
 ## Output format
 
-Edit `papers/NN-*/README.md` in place using the `Edit` tool. Do not return rewritten text in chat for the orchestrator to paste — the expectation is that the README file on disk is the single source of truth after your pass. Return a **Changelog** to the orchestrator with:
+Edit `papers/<method>/NN-*/README.md` in place using the `Edit` tool. Do not return rewritten text in chat for the orchestrator to paste — the expectation is that the README file on disk is the single source of truth after your pass. Return a **Changelog** to the orchestrator with:
 
 1. Which sections you rewrote (2, 4, 5, 6, 10) and one-sentence rationale.
 2. Any rephrasings you made to sections 7–9 (expert-owned) and why — the human reviewer can veto these.

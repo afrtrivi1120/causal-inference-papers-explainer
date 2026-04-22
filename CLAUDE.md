@@ -16,10 +16,11 @@ Build plain-language explainers of methodological causal-inference papers, paire
 ├── .claude/agents/          # Project subagents (see "Subagent routing")
 ├── shared/r-setup.R         # Common package loader + seed
 ├── papers/
-│   └── NN-<first-authors>-<short-topic>/
-│       ├── README.md        # The explainer (12-section template below)
-│       ├── simulation.R     # Runnable simulation (methodological papers only)
-│       └── references.md    # Citation + adjacent reading
+│   └── <method>/            # Methodology bucket: did, iv, rdd, rct, synthetic-control, causal-ai, ...
+│       └── NN-<first-authors>-<short-topic>/
+│           ├── README.md    # The explainer (12-section template below)
+│           ├── simulation.R # Runnable simulation (methodological papers only)
+│           └── references.md # Citation + adjacent reading
 ├── docs/
 │   ├── plans/               # Implementation plans (ce:plan output)
 │   └── solutions/           # Documented solutions to past problems (runtime errors,
@@ -29,7 +30,9 @@ Build plain-language explainers of methodological causal-inference papers, paire
 │                            # debugging in documented areas.
 ```
 
-Folder numbering: `NN-` is a zero-padded two-digit sequence (`01-`, `02-`, ...) reflecting the order in which papers were added to the repo. This is *not* a ranking.
+Folder numbering: `NN-` is a zero-padded two-digit sequence (`01-`, `02-`, ...) reflecting the order in which papers were added to the repo. Numbering is **global**, not per-bucket — so `papers/iv/02-...` and `papers/rdd/03-...` coexist and the numbers inside any one bucket are typically non-contiguous. This is *not* a ranking.
+
+Methodology buckets (`<method>/`) use kebab-case lowercase names — `did`, `iv`, `rdd`, `rct`, `synthetic-control`, `causal-ai`, and so on. New buckets are created lazily when the first paper in that category lands; empty buckets are not kept in the tree.
 
 ## Language and tone
 
@@ -40,7 +43,7 @@ Folder numbering: `NN-` is a zero-padded two-digit sequence (`01-`, `02-`, ...) 
 
 ## Per-paper `README.md` — 12-section template
 
-Every `papers/NN-*/README.md` MUST follow this structure, in this order. Subagents enforce it.
+Every `papers/<method>/NN-*/README.md` MUST follow this structure, in this order. Subagents enforce it.
 
 1. **Citation** — full reference with a working link (arXiv, DOI, or publisher).
 2. **TL;DR** — 3–5 sentences any motivated reader can follow.
@@ -57,12 +60,12 @@ Every `papers/NN-*/README.md` MUST follow this structure, in this order. Subagen
 
 ## R conventions
 
-- Every `simulation.R` begins with a short **script-dir preamble** that uses `commandArgs(trailingOnly = FALSE)` + `--file=` to chdir into the script's own directory, then sources `../../shared/r-setup.R`. This makes `Rscript papers/NN-*/simulation.R` work whether it's invoked from the repo root or from the paper folder. Copy the 4-line preamble from any existing paper; do not reinvent it.
+- Every `simulation.R` begins with a short **script-dir preamble** that uses `commandArgs(trailingOnly = FALSE)` + `--file=` to chdir into the script's own directory, then sources `../../../shared/r-setup.R` (three levels up: `<paper>/`, `<method>/`, `papers/`). This makes `Rscript papers/<method>/NN-*/simulation.R` work whether it's invoked from the repo root or from the paper folder. Copy the 4-line preamble from any existing paper; do not reinvent it.
 - `shared/r-setup.R` sets `set.seed(20260421)`. Per-script overrides are fine but should be explicit — and when the script consumes RNG via a Monte Carlo loop, re-anchor with `set.seed(20260421)` before any "representative" plot draws (see papers 01 and 03).
 - Use **tidyverse** (dplyr, ggplot2, purrr) for data manipulation and plotting. `data.table` is fine if a specific script benefits from it — document why at the top.
 - Expose an `N_SIM` constant near the top of each script so readers can throttle Monte Carlo draws for quick iteration.
 - Always print a **truth vs. estimate** comparison.
-- Always render **at least one diagnostic plot** (`ggplot2` preferred), saved to `papers/NN-*/figures/` via `dir.create("figures", showWarnings = FALSE)` + `ggsave("figures/...")`. The `figures/` directory is gitignored.
+- Always render **at least one diagnostic plot** (`ggplot2` preferred), saved to `papers/<method>/NN-*/figures/` via `dir.create("figures", showWarnings = FALSE)` + `ggsave("figures/...")`. The `figures/` directory is gitignored.
 - When a package is missing, emit a clear install hint — do not fail with a raw traceback. `shared/r-setup.R` already handles this for the standard package list.
 - No secrets, no API keys, no hard-coded absolute paths. Everything must run on a clean machine after `install.packages(...)`.
 
@@ -72,7 +75,7 @@ Four project-scoped subagents live in `.claude/agents/`. Invoke them in this ord
 
 | Step | Agent | Owns | Why |
 |------|-------|------|-----|
-| 1 | `causal-inference-expert` | Scaffold `papers/NN-*/README.md` + `references.md`. Sections 1 (Citation), 5 (Glossary), 7 (Method), 8 (Assumptions), 9 (Findings). | Technical accuracy. Reads the PDF or source, extracts the estimand, identification argument, assumptions, and results. Writes to disk directly (has `Write` + `Edit`). |
+| 1 | `causal-inference-expert` | Scaffold `papers/<method>/NN-*/README.md` + `references.md`. Sections 1 (Citation), 5 (Glossary), 7 (Method), 8 (Assumptions), 9 (Findings). | Technical accuracy. Reads the PDF or source, extracts the estimand, identification argument, assumptions, and results. Writes to disk directly (has `Write` + `Edit`). |
 | 2 | `causal-inference-professor` | Sections 2 (TL;DR), 4 (Causal question), 5 (Glossary rewrite), 6 (Core idea), 10 (Practitioner takeaway). | Pedagogy. Edits the README in place via `Edit`; keeps math minimal in prose while preserving correctness. Does NOT add new Glossary terms the expert has not defined. |
 | 3 | `r-coding-expert` | `simulation.R` + section 11 (Runnable example) in `README.md`. | Simulation. Produces `simulation.R` following the R conventions above, runs it with `Rscript` to confirm it executes end-to-end, writes section 11 into the README, and updates `shared/r-setup.R` / top-level `README.md` if it needs a new package. |
 | 4 | `git-github-expert` | Contents table in top-level `README.md`. `.gitignore`. Commit history. | Repository hygiene. Stages only files for the paper being added, writes a conventional commit, and prepares `gh repo create` / `gh pr create` instructions when the user is ready to push. |
@@ -92,10 +95,10 @@ Rule of thumb: the expert drafts, the professor rewrites, the R coder verifies, 
 ## Adding a new paper — checklist
 
 - [ ] PDF dropped in repo root (will be gitignored).
-- [ ] Folder `papers/NN-<first-authors>-<short-topic>/` created.
+- [ ] Folder `papers/<method>/NN-<first-authors>-<short-topic>/` created (pick a `<method>` bucket — create the bucket folder if it is the first paper in that category).
 - [ ] `references.md` with full citation + link.
 - [ ] Subagent pipeline run end-to-end (expert → professor → R coder → git).
-- [ ] `Rscript papers/NN-*/simulation.R` runs to completion (for methodological papers).
+- [ ] `Rscript papers/<method>/NN-*/simulation.R` runs to completion (for methodological papers).
 - [ ] Top-level `README.md` contents table updated with a real 1-line takeaway.
 - [ ] Conventional commit on its own (e.g., `feat(papers): add paper NN on <topic>`).
 
@@ -104,9 +107,9 @@ Rule of thumb: the expert drafts, the professor rewrites, the R coder verifies, 
 From the repo root:
 
 ```bash
-Rscript papers/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R
-Rscript papers/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.R
-Rscript papers/03-demagalhaes-et-al-rdd-close-elections/simulation.R
+Rscript papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.R
+Rscript papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.R
+Rscript papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.R
 ```
 
 Troubleshooting:
