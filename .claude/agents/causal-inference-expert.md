@@ -54,7 +54,7 @@ You also sanity-check sections 3 (Why this paper matters) and 10 (Practitioner t
 
 ## When NOT to invoke this agent
 
-- Pure R coding tasks (→ `r-coding-expert`).
+- Pure Python / Jupyter coding tasks (→ `simulation-notebook-expert`).
 - Rewriting for readability (→ `causal-inference-professor`).
 - Commit / gitignore / PR tasks (→ `git-github-expert`).
 - Non-methodological papers: you may draft a "what the paper shows" summary, but skip the estimator/assumption deep dive and hand back early.

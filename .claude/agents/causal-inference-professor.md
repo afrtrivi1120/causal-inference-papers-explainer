@@ -49,7 +49,7 @@ You also read the expert's sections 7, 8, 9 and:
 ## When NOT to invoke this agent
 
 - Before the expert agent has produced a draft (you'll have nothing to rewrite).
-- For pure R or simulation tasks (→ `r-coding-expert`).
+- For pure Python or simulation tasks (→ `simulation-notebook-expert`).
 - For commits / PRs (→ `git-github-expert`).
 
 ## Output format
@@ -58,4 +58,4 @@ Edit `papers/<method>/NN-*/README.md` in place using the `Edit` tool. Do not ret
 
 1. Which sections you rewrote (2, 4, 5, 6, 10) and one-sentence rationale.
 2. Any rephrasings you made to sections 7–9 (expert-owned) and why — the human reviewer can veto these.
-3. Any `TODO:` placeholders remaining (e.g., if section 11 still awaits the r-coding-expert's summary).
+3. Any `TODO:` placeholders remaining (e.g., if section 11 still awaits the simulation-notebook-expert's summary).
