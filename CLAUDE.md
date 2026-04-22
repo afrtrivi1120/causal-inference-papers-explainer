@@ -75,7 +75,7 @@ Four project-scoped subagents live in `.claude/agents/`. Invoke them in this ord
 
 | Step | Agent | Owns | Why |
 |------|-------|------|-----|
-| 1 | `causal-inference-expert` | Scaffold `papers/<method>/NN-*/README.md` + `references.md`. Sections 1 (Citation), 5 (Glossary), 7 (Method), 8 (Assumptions), 9 (Findings). | Technical accuracy. Reads the PDF or source, extracts the estimand, identification argument, assumptions, and results. Writes to disk directly (has `Write` + `Edit`). |
+| 1 | `causal-inference-expert` | Resolve the `<method>` bucket and create `papers/<method>/` if it's the first paper in that category. Scaffold `papers/<method>/NN-*/README.md` + `references.md`. Sections 1 (Citation), 5 (Glossary), 7 (Method), 8 (Assumptions), 9 (Findings). | Technical accuracy + bucket routing. Reads the PDF or source, extracts the estimand, picks the bucket slug from the estimator, extracts identification argument, assumptions, and results. Writes to disk directly (has `Write` + `Edit`). |
 | 2 | `causal-inference-professor` | Sections 2 (TL;DR), 4 (Causal question), 5 (Glossary rewrite), 6 (Core idea), 10 (Practitioner takeaway). | Pedagogy. Edits the README in place via `Edit`; keeps math minimal in prose while preserving correctness. Does NOT add new Glossary terms the expert has not defined. |
 | 3 | `r-coding-expert` | `simulation.R` + section 11 (Runnable example) in `README.md`. | Simulation. Produces `simulation.R` following the R conventions above, runs it with `Rscript` to confirm it executes end-to-end, writes section 11 into the README, and updates `shared/r-setup.R` / top-level `README.md` if it needs a new package. |
 | 4 | `git-github-expert` | Contents table in top-level `README.md`. `.gitignore`. Commit history. | Repository hygiene. Stages only files for the paper being added, writes a conventional commit, and prepares `gh repo create` / `gh pr create` instructions when the user is ready to push. |
@@ -95,7 +95,7 @@ Rule of thumb: the expert drafts, the professor rewrites, the R coder verifies, 
 ## Adding a new paper — checklist
 
 - [ ] PDF dropped in repo root (will be gitignored).
-- [ ] Folder `papers/<method>/NN-<first-authors>-<short-topic>/` created (pick a `<method>` bucket — create the bucket folder if it is the first paper in that category).
+- [ ] Folder `papers/<method>/NN-<first-authors>-<short-topic>/` created. The `causal-inference-expert` agent owns bucket resolution (picking `<method>` from the estimator) and creates `papers/<method>/` if it's the first paper in that category — you do not need to pick the slug yourself before invoking the pipeline.
 - [ ] `references.md` with full citation + link.
 - [ ] Subagent pipeline run end-to-end (expert → professor → R coder → git).
 - [ ] `Rscript papers/<method>/NN-*/simulation.R` runs to completion (for methodological papers).
@@ -130,7 +130,7 @@ One commit per logical change, landed as soon as the change is coherent and veri
 |---|---|
 | Repo scaffold lands (a new convention in `CLAUDE.md`, a new `shared/` helper, a `.gitignore` update) | `feat(repo): ...`  ·  `chore(repo): ...` |
 | A subagent definition is added or meaningfully reshaped | `feat(agents): ...`  ·  `fix(agents): ...` |
-| A paper folder is complete (`README.md` + `simulation.R` + `references.md`, all sections filled, simulation runs clean) | `feat(papers/NN): add paper NN — <short topic>` |
+| A paper folder is complete (`README.md` + `simulation.R` + `references.md`, all sections filled, simulation runs clean) | `feat(papers/<method>/NN): add paper NN — <short topic>` |
 | A review-fix batch lands (one batch per ce:review run, not one per finding) | `fix: apply ce:review batch N (...)` |
 | A new learning is captured via ce:compound | `docs(solutions): ...` |
 | A plan is added or its checkboxes are flipped | `chore(repo): mark plan units complete`  ·  `docs(plans): ...` |

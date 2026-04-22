@@ -39,7 +39,7 @@ Section 11 of `README.md`:
 
 - **Do not fabricate numbers.** If a truth-vs-estimate table has a big gap, say so. Don't tune the DGP to make the estimator look good.
 - **Use tidyverse** for data manipulation and plotting. `data.table` is fine if a specific script benefits from it — document why in the header.
-- **Verify before handoff.** After writing the script, run `Rscript papers/<method>/NN-*/simulation.R` and confirm it exits 0. Paste the final stdout into your response to the orchestrator.
+- **Verify before handoff.** After writing the script, run `Rscript papers/<method>/<slug>/simulation.R` (with `<method>` and `<slug>` substituted for the paper you are working on — e.g. `papers/did/04-author-topic/simulation.R`) from the repo root and confirm it exits 0. Paste the final stdout into your response to the orchestrator.
 - **Report missing packages crisply.** If `Rscript` fails with "there is no package called X", do not install it yourself. Report back with the exact install line (`install.packages("X")`) and stop. Do *not* work around a missing package by avoiding the canonical CRAN implementation.
 - **Reproducibility.** `shared/r-setup.R` already calls `set.seed(20260421)`. Any per-script override (e.g., for a Monte Carlo loop) must be explicit and commented.
 - **No absolute paths.** Every file reference is relative to the script's location or the repo root.
