@@ -128,22 +128,22 @@ The difference is the extra `Var(Z | X = x)` factor in the TSLS weights. If `Var
 - complier shares 0.20 at `X=0` and 0.60 at `X=1`;
 - true population LATE (complier-mass weighted) = **0.75**.
 
-Over 500 Monte Carlo draws (N = 5000 each), the notebook compares three estimators:
+The notebook draws **one dataset** of `N = 20000` and fits two estimators side by side:
 
 1. **Unsaturated TSLS** — `ivreg(Y ~ D + X | Z + X)`.
 2. **Saturated stratum Wald**, pooled by estimated complier mass.
-3. **Saturated full-interaction TSLS**, aggregated identically.
 
 Representative output (seed `20260421`):
 
 ```
-True population LATE                    = 0.750
-Unsaturated TSLS                mean    = 0.442   (bias = −0.308)
-Saturated (stratum Wald pooled) mean    = 0.751   (bias =  0.001)
-Saturated (full interaction)    mean    = 0.751   (bias =  0.001)
+True population LATE                              = 0.750
+Unsaturated TSLS  (Y ~ D + X | Z + X)             = 0.504   (gap = -0.246)
+Saturated stratum Wald (pooled by complier mass)  = 0.835   (gap = +0.085)
 ```
 
-The inline ggplot2 figure shows the sampling distribution of all three estimators side by side with the true LATE. The saturated distributions are centered on 0.75; the unsaturated distribution is centered *41% lower* because it mixes the two stratum LATEs with the wrong weights.
+The unsaturated estimate sits *one third below* the true LATE — it is mixing `LATE(X=0) = 3.0` and `LATE(X=1) = 0.0` with the wrong weights. The saturated stratum-Wald sits near 0.75 (the residual gap is one-draw sampling noise). The inline ggplot2 figure makes both contrasts visible: dashed line at the true LATE, dotted lines at the two stratum LATEs.
+
+This is one simulated draw at large `N`. The paper's bias claim is in expectation; one draw at this sample size is enough that sampling noise around each estimate is small relative to the population-level weighting bug.
 
 Run it — the Colab badge at the top of the notebook launches it in a free cloud kernel (pick *Runtime → Change runtime type → R* once per session). Locally:
 

@@ -108,14 +108,14 @@ Three practical moves you should make on your next DiD project:
 
 ## 11. Runnable example
 
-[`simulation.ipynb`](simulation.ipynb) builds a 2-period × 2-group DGP where the true ATT is a well-defined average gain. The notebook has an "Open in Colab" badge at the top — one click runs it in a free cloud kernel, no install required. It runs two scenarios:
+[`simulation.ipynb`](simulation.ipynb) builds a 2-period × 2-group DGP where the true ATT is a well-defined average gain. The notebook has an "Open in Colab" badge at the top — one click runs it in a free cloud kernel, no install required. It draws **one dataset per scenario** (`N = 4000`) and fits a standard 2×2 DiD:
 
-- **Scenario A** — `rho = 0`. Selection is still Roy-style (units opt in on expected gains), but the gain-driving factor `v` is *independent* of the untreated trend, so the DiD is unbiased.
-- **Scenario B** — `rho = 1`. Same selection rule, but now the gain-driving factor *also* drives the untreated trend. DiD is biased upward by roughly 2 units across 300 Monte-Carlo draws.
+- **Scenario A** — `rho = 0`. Selection is Roy-style (units opt in on expected gains), but the gain-driving factor `v` is *independent* of the untreated trend. DiD recovers the true ATT.
+- **Scenario B** — `rho = 1`. Same selection rule, but now `v` *also* moves the untreated trend. DiD is biased upward by ~2 units.
 
-The bias decomposes cleanly: `bias = rho · (E[v | D=1] − E[v | D=0])`. Both `rho > 0` *and* selection correlated with `v` are required — remove either ingredient and the DiD is unbiased. That joint dependence is exactly Ghanem, Sant'Anna & Wüthrich's point: parallel trends is neither "a property of the trends" nor "a property of the selection rule", but a property of their interaction.
+The bias decomposes cleanly: `bias ≈ rho · (E[v | D=1] − E[v | D=0])`. Both `rho > 0` *and* selection correlated with `v` are required — remove either ingredient and DiD is unbiased. That joint dependence is exactly Ghanem, Sant'Anna & Wüthrich's point: parallel trends is neither "a property of the trends" nor "a property of the selection rule", but a property of their interaction.
 
-A second note about the numbers: with `TAU = 1.5` and `v ~ N(0, 1)` the treatment share is roughly 93% — an intentionally imbalanced split that amplifies the Scenario B bias. Setting `TAU = 0` in the notebook gives a 50/50 split and shrinks the bias accordingly without changing the qualitative story.
+This is a single-draw illustration. The paper's claim is in expectation; one draw at `N = 4000` is enough to make the contrast visible. With `TAU = 1.5` and `v ~ N(0, 1)` the treatment share is ~93% — an intentionally imbalanced split that amplifies Scenario B's bias.
 
 The notebook prints a summary tibble and renders an inline ggplot2 figure showing treated/control group means plus the treated group's counterfactual `Y(0)` trend, so you can see exactly where the "trend gap" emerges in Scenario B.
 
@@ -133,8 +133,8 @@ jupyter nbconvert --to notebook --execute --inplace \
 Representative output (seed `20260421`):
 
 ```
-Scenario A: mean_DiD_estimate ≈ 1.64   mean_bias ≈ -0.002
-Scenario B: mean_DiD_estimate ≈ 3.60   mean_bias ≈  1.95
+Scenario A: DiD ≈ 1.56   bias ≈ -0.07
+Scenario B: DiD ≈ 3.66   bias ≈ +2.01
 ```
 
 ## 12. Further reading

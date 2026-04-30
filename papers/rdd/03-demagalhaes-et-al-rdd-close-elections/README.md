@@ -122,40 +122,26 @@ Even the best-chosen RDD specification assumes:
 - a conditional mean `μ(X) = 0.5 + 3X + 50X² + 80X³` — deliberately strong curvature near the cutoff so the paper's warning case is live;
 - true sharp treatment effect `τ = 0.5` at the cutoff.
 
-Over 500 Monte Carlo draws of N = 600 each, it runs six specifications through `rdrobust::rdrobust`:
+The notebook draws **one dataset** of `N = 2000` and fits two specifications via `rdrobust::rdrobust`:
 
 | Spec | Bandwidth | Inference |
 |------|-----------|-----------|
-| p = 1 | MSE-optimal | Conventional |
-| p = 1 | MSE-optimal | Robust (BC) |
-| p = 1 | CER-optimal | Conventional |
-| p = 1 | CER-optimal | Robust (BC) |
-| p = 2 | MSE-optimal | Robust (BC) |
-| p = 2 | CER-optimal | Robust (BC) |
+| `p = 1` | MSE-optimal (`mserd`) | Conventional |
+| `p = 1` | CER-optimal (`cerrd`) | Robust (BC) |
 
 Representative output (seed `20260421`):
 
 ```
-Spec                             est     bias  coverage  CI width
-p=1, MSE-opt, Conventional      0.483  −0.017    0.92      0.64
-p=1, MSE-opt, Robust (BC)       0.531   0.031    0.94      0.75
-p=1, CER-opt, Conventional      0.492  −0.008    0.92      0.76
-p=1, CER-opt, Robust (BC)       0.519   0.019    0.93      0.82
-p=2, MSE-opt, Robust (BC)       0.498  −0.002    0.95      0.66
-p=2, CER-opt, Robust (BC)       0.495  −0.005    0.92      0.78
+specification                estimate   ci_low   ci_high   bandwidth_h   covers_truth
+p=1, MSE-opt, Conventional   0.494      0.339    0.649     0.10          TRUE
+p=1, CER-opt, Robust (BC)    0.477      0.296    0.659     0.07          TRUE
 ```
 
-Two things to read off this table honestly:
+What is visible from one draw at this seed: **bandwidth choice** and **CI width**. CER-opt picks a narrower window (`h ≈ 0.07` vs `0.10`) so less of the curved cubic sits inside the local-linear fit, and the robust CI is wider to reflect the bias-correction step.
 
-- **Coverage** sits in the 0.92–0.95 band across all specs. At N_SIM = 500 the Monte-Carlo SE on a coverage of 0.93 is about ±0.011, so a 3-percentage-point gap is marginal but meaningfully in the right direction — exactly as De Magalhães et al. report for moderate-curvature cases.
-- **Bias** ranking (Conventional ≈ −0.02; Robust ≈ +0.01–0.05) is close to the Monte-Carlo noise floor at this N_SIM; treat the ordering as indicative, not statistically separable. What matters pedagogically is the *direction*: Robust (BC) shrinks bias at the cost of a wider CI, and the paper's experimental benchmark favours that tradeoff.
+What is *not* visible from one draw: the coverage claim itself. The paper's empirical-coverage tables come from thousands of draws — under realistic curvature MSE-opt + Conventional empirically covers around 92–93% (vs. 95% nominal) and CER-opt + Robust gets close to nominal. At this seed both happen to cover; the Monte Carlo is what proves the gap. Open the notebook on Colab and bump `SIGMA`, sharpen the cubic in `mu(X)`, or shrink `N` to draws where the MSE-opt CI misses more often.
 
-Under the paper's experimental benchmark, the combined evidence — better coverage plus smaller bias — favors **CER-optimal + Robust** as the safer default whenever curvature is a concern.
-
-Two diagnostic plots render inline in the notebook:
-
-1. A scatter of the raw draw with the true conditional mean overlaid, plus the MSE-optimal and CER-optimal bandwidth windows shaded — so you can see the narrower CER window.
-2. Coverage bars across all six specifications with the nominal 0.95 marked.
+The diagnostic plot renders the raw draw with the true cubic conditional mean overlaid, the cutoff dashed, and both bandwidth windows shaded — so the narrower CER window is unmistakable.
 
 Run it — the Colab badge at the top of the notebook launches it in a free cloud kernel (pick *Runtime → Change runtime type → R* once per session; the first setup cell runs `install.packages('rdrobust')` if the dep is missing). Locally:
 
@@ -164,7 +150,7 @@ jupyter nbconvert --to notebook --execute --inplace \
   papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.ipynb
 ```
 
-Change the coefficients of `mu(x)` at the top of the notebook to soften or sharpen the curvature and see how the coverage gap opens or closes.
+Change the coefficients of `mu(x)` at the top of the notebook to soften or sharpen the curvature and see how the bias contributions move.
 
 ## 12. Further reading
 

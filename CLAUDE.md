@@ -62,10 +62,10 @@ Every `papers/<method>/NN-*/README.md` MUST follow this structure, in this order
 - Every `simulation.ipynb` uses the **R (IRkernel) kernel** (kernelspec `ir`) and opens with a **markdown title cell** that includes a one-line paper citation, an "Open in Colab" badge linking to the notebook's raw GitHub URL (branch `master`), a one-paragraph "what this simulation shows" hook, and a one-paragraph DGP summary. Readers on Colab pick *Runtime → Change runtime type → R* once per session.
 - The **setup code cell** runs in this order: (1) defensive `if (!requireNamespace('X', quietly = TRUE)) install.packages('X', quiet = TRUE)` for any dep not in Colab's default R runtime (typically `AER`, `rdrobust`; `tidyverse` is pre-installed); (2) `suppressPackageStartupMessages({ library(...) })`; (3) `set.seed(20260421)`; (4) a version print block so readers can diagnose library-version drift.
 - Use **tidyverse** (dplyr, ggplot2, purrr) for data manipulation and plotting. `data.table` is fine if a specific notebook benefits from it — document why at the top.
-- Expose an `N_SIM` constant near the top of each notebook so readers can throttle Monte Carlo draws for quick iteration.
+- If the notebook uses a Monte Carlo loop, expose an `N_SIM` constant near the top so readers can throttle draws for quick iteration. Single-draw demonstrations omit `N_SIM`.
 - Always print a **truth vs. estimate** comparison (as a `tibble` or similar structured object — Jupyter renders tibbles inline).
 - Always render **at least one diagnostic plot** via `ggplot2`. Set inline plot size with `options(repr.plot.width = ..., repr.plot.height = ...)` before the plot call. Plots render inline; do **not** save to disk — the point is inline rendering in GitHub's `.ipynb` viewer.
-- Re-anchor the RNG with `set.seed(20260421)` before any "representative" plot draw, because the Monte Carlo loop consumes an `N_SIM`-dependent amount of RNG state.
+- When the notebook uses Monte Carlo, re-anchor the RNG with `set.seed(20260421)` before any "representative" plot draw, because the Monte Carlo loop consumes an `N_SIM`-dependent amount of RNG state. Single-draw notebooks set the seed once at the top and need no re-anchor.
 - **Label-safe lookups.** When an estimator returns a structured object with labeled rows (e.g. `rdrobust` returns "Conventional"/"Bias-Corrected"/"Robust" rows), index by row **name** via `rownames()` lookup with a `stopifnot()` that the expected labels exist. Never positional indexing — a future package release could reorder rows and silently return the wrong number.
 - **Commit notebooks with rendered outputs.** Use `jupyter nbconvert --to notebook --execute --inplace <path>` to produce the final version; GitHub's `.ipynb` viewer shows the full reader experience without requiring execution.
 - No secrets, no API keys, no hard-coded absolute paths. Everything must run on a fresh Colab R runtime after the in-notebook `install.packages(...)`, or locally with R ≥ 4.3 and `tidyverse` + `AER` + `rdrobust` installed.
@@ -131,7 +131,7 @@ jupyter nbconvert --to notebook --execute --inplace \
 Troubleshooting:
 
 - *`there is no package called 'X'`* — run `install.packages('X')` in R, or re-run the notebook's first cell so its defensive `install.packages(...)` call fires.
-- *Simulation feels slow* — each notebook exposes an `N_SIM` constant near the top; drop it to 50 for quick iteration.
+- *Simulation feels slow* — Monte Carlo notebooks expose an `N_SIM` constant near the top; drop it to 50 for quick iteration. Single-draw notebooks should already render in seconds.
 - *Different numbers than expected* — verify `set.seed(20260421)` hasn't been changed, and check the version-print cell at the top for library-version drift.
 
 ## Committing, pushing, and publishing
