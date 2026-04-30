@@ -26,9 +26,11 @@ The notebook, in this cell order:
    - `suppressPackageStartupMessages({ library(tidyverse); library(<estimator-pkg>) })`.
    - `set.seed(20260421)`.
    - Version print block so readers who get different numbers can diagnose library drift.
-3. **Markdown + code cells for parameters**, **DGP function**, **single-draw estimator** (with a label-safe lookup pattern if the estimator returns a structured object whose row labels matter — see the paper 03 `coef_by_name` pattern that calls `stopifnot()` on expected row names).
-4. **Monte Carlo markdown + code cell** — expose an `N_SIM` constant the reader can throttle. Run the MC. `print(summary_tbl, n = Inf)` of a tibble with truth / mean_estimate / bias / mc_sd (or coverage / CI width, per paper).
-5. **Diagnostic plot markdown + code cell(s)** — at least one `ggplot2` figure. Set `options(repr.plot.width = ..., repr.plot.height = ...)` before the plot call so inline rendering uses a sensible size. Re-anchor the seed with `set.seed(20260421)` before any representative-draw plot, because the MC loop above consumed an `N_SIM`-dependent amount of RNG state. Do not save plots to disk — the point is inline rendering.
+3. **Markdown + code cells for parameters**, **DGP**, and **estimator** (with a label-safe lookup pattern when the estimator returns a structured object whose row labels matter — see the paper 03 `rdrobust` pattern that calls `stopifnot()` on expected row names).
+4. **Comparison cell** — pick one of two structures based on what makes the paper's punchline clearest:
+   - **Monte Carlo.** Expose an `N_SIM` constant the reader can throttle. Run the MC. `print(summary_tbl, n = Inf)` of a tibble with truth / mean_estimate / bias / mc_sd (or coverage / CI width, per paper). Use this when the punchline is a sampling-distribution claim (bias, RMSE, coverage rate) that a single draw cannot honestly demonstrate.
+   - **Single draw.** Draw once at a sample size large enough that the punchline is visible without averaging. `print(...)` a tibble with one row per estimator (or per scenario) showing truth / estimate / gap or coverage indicator. Use this when the punchline is a *mechanism* the reader can grasp from one dataset (e.g. parallel-trends violation, weighting bug, bandwidth/CI tradeoff). State explicitly in the punchline cell that the result is one draw and the paper's claim is in expectation. Do not include `N_SIM` for single-draw notebooks.
+5. **Diagnostic plot markdown + code cell(s)** — at least one `ggplot2` figure. Set `options(repr.plot.width = ..., repr.plot.height = ...)` before the plot call so inline rendering uses a sensible size. **For Monte Carlo notebooks**, re-anchor the seed with `set.seed(20260421)` before any representative-draw plot, because the MC loop above consumed an `N_SIM`-dependent amount of RNG state. **For single-draw notebooks**, the seed was set once at the top and no re-anchor is needed (the existing `X`, `Y`, `D`, etc. are already deterministic). Do not save plots to disk — the point is inline rendering.
 6. **Markdown punchline cell** — 3–5 sentences explaining what the numbers + plot mean, framed as the paper's practical recommendation.
 
 Section 11 of `README.md`:
@@ -47,7 +49,7 @@ Section 11 of `README.md`:
 - **Reproducibility.** Every notebook calls `set.seed(20260421)`. Any per-loop override must be explicit and commented.
 - **No absolute paths.** Every file reference is relative to the notebook's location or the repo root.
 - **No network calls in code cells.** The only allowed network access is the `install.packages(...)` guard in the setup cell; actual simulations run offline.
-- **Comment sparingly but usefully.** A comment explains *why*, not *what*. `# Re-anchor RNG for reproducible plot (MC loop consumed N_SIM-dependent state)` is good; `# set seed` is not.
+- **Comment sparingly but usefully.** A comment explains *why*, not *what*. `# Re-anchor RNG for reproducible plot (MC loop consumed N_SIM-dependent state)` is good (MC notebook); `# Roy-style selection: treat if expected gain is positive` is good (single-draw notebook); `# set seed` is not.
 - **Keep it one notebook file.** Don't split into helper `.R` modules unless the notebook would be > 20 code cells.
 
 ## When NOT to invoke this agent
@@ -61,7 +63,7 @@ Section 11 of `README.md`:
 After you have written `simulation.ipynb`, executed it, and edited README section 11, return to the orchestrator:
 
 1. Path to `simulation.ipynb` and a one-line description of its DGP and estimator.
-2. The final Monte Carlo summary tibble from the executed notebook, proving the simulation ran end-to-end on the current machine.
+2. The final truth-vs-estimate tibble from the executed notebook (the Monte Carlo summary tibble for MC notebooks; the per-estimator/per-scenario comparison tibble for single-draw notebooks), proving the simulation ran end-to-end on the current machine.
 3. Confirmation that README section 11 is no longer a `TODO:` placeholder, and a paste of the final section 11 text you wrote.
 4. Any packages you added (with their `install.packages(...)` calls) to the notebook's setup cell, plus a mention in the top-level `README.md` requirements block.
 5. The Colab badge URL you inserted (so the git-github-expert can sanity-check it points to the right branch + path).

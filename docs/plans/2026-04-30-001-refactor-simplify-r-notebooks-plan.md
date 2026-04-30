@@ -84,7 +84,7 @@ Not used. The change is mechanical (rewrite three notebooks against an existing 
 
 ## Implementation Units
 
-- [ ] **Unit 1: Relax `CLAUDE.md` notebook conventions for single-draw notebooks**
+- [x] **Unit 1: Relax `CLAUDE.md` notebook conventions for single-draw notebooks**
 
 **Goal:** Make `N_SIM` and the "re-anchor seed before representative plot" rule conditional on whether the notebook uses Monte Carlo, so the three rewritten notebooks comply with the project's own conventions.
 
@@ -111,7 +111,7 @@ Not used. The change is mechanical (rewrite three notebooks against an existing 
 - No other bullet was disturbed.
 - A grep for `N_SIM` in `CLAUDE.md` returns only the relaxed bullet.
 
-- [ ] **Unit 2: Rewrite the DID notebook as a single-draw two-scenario demo**
+- [x] **Unit 2: Rewrite the DID notebook as a single-draw two-scenario demo**
 
 **Goal:** Show the paper's punchline — that selection on gains breaks parallel trends — using one draw per scenario and one before/after plot. The reader should see, in one screen of code, that DiD recovers the ATT when `rho = 0` and biases it when `rho = 1`.
 
@@ -151,7 +151,7 @@ Not used. The change is mechanical (rewrite three notebooks against an existing 
 - Total code line count drops materially (target: ≤ 70 lines, was 134).
 - No `replicate(`, `N_SIM`, or helper closures (`draw_dgp`, `run_once`) remain in the file.
 
-- [ ] **Unit 3: Rewrite the IV notebook as a single-draw two-estimator demo**
+- [x] **Unit 3: Rewrite the IV notebook as a single-draw two-estimator demo**
 
 **Goal:** Show the paper's punchline — that adding `X` linearly to TSLS does not recover the LATE when `Z` is only conditionally valid — using one draw and two estimators side by side.
 
@@ -192,7 +192,7 @@ Not used. The change is mechanical (rewrite three notebooks against an existing 
 - Total code line count drops materially (target: ≤ 75 lines, was 140).
 - No `replicate(`, `N_SIM`, full-interaction TSLS (`Y ~ D + X + DX | Z + X + ZX`), or helper closures remain.
 
-- [ ] **Unit 4: Rewrite the RDD notebook as a single-draw two-spec demo**
+- [x] **Unit 4: Rewrite the RDD notebook as a single-draw two-spec demo**
 
 **Goal:** Show the paper's punchline — that close-elections RDD coverage is sensitive to bandwidth choice and inference flavor — using one draw and two specifications.
 
@@ -234,7 +234,7 @@ Not used. The change is mechanical (rewrite three notebooks against an existing 
 - Total code line count drops materially (target: ≤ 70 lines, was 149).
 - No `replicate(`, `N_SIM`, six-row `specs` tibble, four-fit list, `coef_by_name()` helper, or coverage bar chart remain.
 
-- [ ] **Unit 5: Re-execute, sanity-check, and commit**
+- [x] **Unit 5: Re-execute, sanity-check, and commit**
 
 **Goal:** Land the changes as a single conventional commit with rendered outputs and verify the repo's pre-commit checklist still passes.
 

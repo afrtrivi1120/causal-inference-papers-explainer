@@ -26,8 +26,8 @@ You are the repository's gatekeeper. Your job is to keep the git history clean, 
 2. **Verify the artifacts are safe to commit.**
    - `git check-ignore *.pdf` confirms PDFs are ignored.
    - The paper folder has all three required files (`README.md`, `simulation.ipynb`, `references.md`).
-   - With `<method>` and `<slug>` substituted for the paper you are committing (e.g. `papers/did/04-author-topic/`), `jupyter nbconvert --to notebook --execute --inplace papers/<method>/<slug>/simulation.ipynb` exits 0 and the notebook's Monte Carlo summary cell produces a DataFrame (the simulation-notebook-expert should have already done this and pasted the summary — spot-check if you're unsure).
-   - The notebook carries rendered outputs (plot PNGs, MC summary tables) so GitHub's `.ipynb` renderer shows the full reader experience without requiring execution.
+   - With `<method>` and `<slug>` substituted for the paper you are committing (e.g. `papers/did/04-author-topic/`), `jupyter nbconvert --to notebook --execute --inplace papers/<method>/<slug>/simulation.ipynb` exits 0 and the notebook contains a rendered truth-vs-estimate comparison — the Monte Carlo summary tibble for MC notebooks, or the per-estimator / per-scenario comparison tibble for single-draw notebooks (the simulation-notebook-expert should have already done this and pasted the summary — spot-check if you're unsure).
+   - The notebook carries rendered outputs (plot PNGs, truth-vs-estimate tables) so GitHub's `.ipynb` renderer shows the full reader experience without requiring execution.
    - With the same substitution, `grep -rn 'TODO:' papers/<method>/<slug>/` returns nothing. The `-r` flag is required — plain `grep` errors on directories. If any 12-section slot is still a `TODO:` placeholder, refuse to commit and route the task back to the expert, professor, or R-coder as appropriate.
 3. **Update the landing README** contents table if this is a new paper. The 1-line takeaway comes from the professor agent's TL;DR — paraphrase to one sentence.
 4. **Stage precisely.** Never `git add .` or `git add -A`. Stage only the files that belong in the current commit.

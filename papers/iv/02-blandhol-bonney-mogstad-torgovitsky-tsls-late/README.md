@@ -141,9 +141,9 @@ Unsaturated TSLS  (Y ~ D + X | Z + X)             = 0.504   (gap = -0.246)
 Saturated stratum Wald (pooled by complier mass)  = 0.835   (gap = +0.085)
 ```
 
-The unsaturated estimate sits *one third below* the true LATE — it is mixing `LATE(X=0) = 3.0` and `LATE(X=1) = 0.0` with the wrong weights. The saturated stratum-Wald sits near 0.75 (the residual gap is one-draw sampling noise). The inline ggplot2 figure makes both contrasts visible: dashed line at the true LATE, dotted lines at the two stratum LATEs.
+The unsaturated estimate sits *one third below* the true LATE — it is mixing `LATE(X=0) = 3.0` and `LATE(X=1) = 0.0` with the wrong weights. The saturated stratum-Wald sits near 0.75 — close enough to confirm it targets the right estimand, and the `+0.085` residual gap is what one draw at this seed and `N` happens to produce (the stratum-Wald is a ratio of correlated sample averages, so its one-draw noise is non-trivial even at `N = 20000`; the paper's unbiasedness claim is in expectation across many draws). The inline ggplot2 figure makes both contrasts visible: dashed line at the true LATE, dotted lines at the two stratum LATEs.
 
-This is one simulated draw at large `N`. The paper's bias claim is in expectation; one draw at this sample size is enough that sampling noise around each estimate is small relative to the population-level weighting bug.
+This is one simulated draw at large `N`. The paper's claims about *both* estimators — the unsaturated TSLS's weighting bug and the saturated stratum-Wald's consistency — are population-level and in expectation. What one draw at this `N` can show is that the unsaturated bias dominates one-draw noise by a wide margin.
 
 Run it — the Colab badge at the top of the notebook launches it in a free cloud kernel (pick *Runtime → Change runtime type → R* once per session). Locally:
 

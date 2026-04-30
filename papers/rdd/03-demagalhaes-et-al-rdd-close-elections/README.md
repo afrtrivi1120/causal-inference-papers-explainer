@@ -137,6 +137,8 @@ p=1, MSE-opt, Conventional   0.494      0.339    0.649     0.10          TRUE
 p=1, CER-opt, Robust (BC)    0.477      0.296    0.659     0.07          TRUE
 ```
 
+> Both rows show `covers_truth = TRUE` at this seed — that is the *exception*, not the contradiction it looks like. The paper's coverage claim is in expectation across many draws (the MSE-opt + Conventional CI empirically covers around 92–93% under realistic curvature, vs. 95% nominal). One draw cannot prove an 8% miss rate; what one draw *can* show is the mechanism that drives it (next paragraph).
+
 What is visible from one draw at this seed: **bandwidth choice** and **CI width**. CER-opt picks a narrower window (`h ≈ 0.07` vs `0.10`) so less of the curved cubic sits inside the local-linear fit, and the robust CI is wider to reflect the bias-correction step.
 
 What is *not* visible from one draw: the coverage claim itself. The paper's empirical-coverage tables come from thousands of draws — under realistic curvature MSE-opt + Conventional empirically covers around 92–93% (vs. 95% nominal) and CER-opt + Robust gets close to nominal. At this seed both happen to cover; the Monte Carlo is what proves the gap. Open the notebook on Colab and bump `SIGMA`, sharpen the cubic in `mu(X)`, or shrink `N` to draws where the MSE-opt CI misses more often.
