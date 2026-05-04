@@ -28,6 +28,7 @@ Papers are organized by methodology. The taxonomy we plan to cover includes **RC
 | Paper | Folder | One-line takeaway |
 |-------|--------|-------------------|
 | Blandhol, Bonney, Mogstad & Torgovitsky — *When is TSLS Actually LATE?* | [`papers/iv/blandhol-bonney-mogstad-torgovitsky-tsls-late/`](papers/iv/blandhol-bonney-mogstad-torgovitsky-tsls-late/) | If your IV regression includes covariates and you don't interact them with the instrument, you're almost certainly *not* estimating a LATE. |
+| Słoczyński — *When Should We (Not) Interpret Linear IV Estimands as LATE?* | [`papers/iv/sloczynski-linear-iv-late/`](papers/iv/sloczynski-linear-iv-late/) | When subgroups have first stages of opposite signs, the everyday linear-IV "average" silently puts *negative* weight on some subgroups — and even the saturated fix recovers a different positively-weighted average, not the LATE. |
 
 ### Regression Discontinuity (RDD)
 
