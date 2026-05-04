@@ -6,7 +6,7 @@
 
 Ghanem, D., Sant'Anna, P. H. C., & Wüthrich, K. (2024). *Selection and Parallel Trends*. arXiv:2203.09001.
 
-- Paper: <https://arxiv.org/abs/2203.09001>
+- [arXiv](https://arxiv.org/abs/2203.09001)
 - See [`references.md`](references.md) for adjacent reading.
 
 ## 2. TL;DR

@@ -6,7 +6,7 @@
 
 De Magalhães, L., Hangartner, D., Hirvonen, S., Meriläinen, J., Ruiz, N. A., & Tukiainen, J. (2025). *When Can We Trust Regression Discontinuity Design Estimates from Close Elections? Evidence from Experimental Benchmarks*.
 
-- Search / working-paper link: [Google Scholar](https://scholar.google.com/scholar?q=De+Magalh%C3%A3es+Hangartner+Hirvonen+Meril%C3%A4inen+Ruiz+Tukiainen+RDD+close+elections+experimental+benchmarks)
+- [Google Scholar search](https://scholar.google.com/scholar?q=De+Magalh%C3%A3es+Hangartner+Hirvonen+Meril%C3%A4inen+Ruiz+Tukiainen+RDD+close+elections+experimental+benchmarks)
 - A stable DOI or publisher URL was not available at the time of writing; see [`references.md`](references.md) for adjacent reading and update both files once a DOI is published.
 
 ## 2. TL;DR
