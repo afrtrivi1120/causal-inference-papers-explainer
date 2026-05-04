@@ -51,6 +51,7 @@ Section 11 of `README.md`:
 - **No network calls in code cells.** The only allowed network access is the `install.packages(...)` guard in the setup cell; actual simulations run offline.
 - **Comment sparingly but usefully.** A comment explains *why*, not *what*. `# Re-anchor RNG for reproducible plot (MC loop consumed N_SIM-dependent state)` is good (MC notebook); `# Roy-style selection: treat if expected gain is positive` is good (single-draw notebook); `# set seed` is not.
 - **Keep it one notebook file.** Don't split into helper `.R` modules unless the notebook would be > 20 code cells.
+- **Link-anchor convention.** Follow the Linking rule in `CLAUDE.md` whenever you add a hyperlink in Section 11 or in the notebook's markdown title cell — short human-readable anchor text (`[arXiv]`, `[NBER working paper]`, `[Open in Colab]`), never bare-URL or query-bearing anchors.
 
 ## When NOT to invoke this agent
 

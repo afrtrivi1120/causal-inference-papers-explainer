@@ -77,7 +77,7 @@ jupyter nbconvert --to notebook --execute --inplace \
 tidyverse, AER, rdrobust, ggplot2
 ```
 
-Every notebook calls `set.seed(20260421)` so re-running gives identical numbers. Each notebook exposes an `N_SIM` constant near the top so you can throttle Monte Carlo work for quick iteration.
+Every notebook calls `set.seed(20260421)` so re-running gives identical numbers. Monte Carlo notebooks expose an `N_SIM` constant near the top so you can throttle the simulation; single-draw notebooks (the current default in this repo) complete in seconds without throttling.
 
 ## How to add a new paper
 

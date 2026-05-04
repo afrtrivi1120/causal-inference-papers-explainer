@@ -217,14 +217,16 @@ The [Open in Colab](https://colab.research.google.com/github/afrtrivi1120/causal
 
 ```
   estimator                                      estimate  gap_vs_truth
-  Truth (population LATE)                          1.000         0.000
-  Noninteracted linear IV  (Y ~ D + X | Z + X)    -0.026        -1.026
-  AI interacted Wald (pooled by |omega_hat(X)|)    1.018         0.018
+  Truth (population LATE)                                 1.000         0.000
+  Noninteracted linear IV  (Y ~ D + X | Z + X)           -0.026        -1.026
+  τ_LATE Wald (per stratum, pooled by |ω̂(X)|)            1.018         0.018
 ```
 
-The noninteracted estimate lands near −0.026, a gap of over one unit from the truth, even though every individual has a treatment effect of 1.0. The AI interacted estimate is 1.018, within rounding of the truth.
+The noninteracted estimate lands **near zero**, roughly one unit away from the truth, even though every individual has a treatment effect of 1.0. The exact value (and even its sign) at this seed is sampling noise: in this fully-symmetric design — equal stratum sizes, equal `Var(Z | X)`, opposite-sign `ω(x)` — the population-level linear-IV estimand is in fact `0 / 0`, with both numerator and denominator canceling. What is robust across seeds is that the estimate *collapses near zero*; the −0.026 we report is one draw's particular noise. The τ_LATE Wald is 1.018, within rounding of the truth.
 
-**The diagnostic plots make the mechanism concrete.** The first plot shows the implied weights that each estimand places on each stratum's LATE. Under the noninteracted IV, stratum `X = 1` receives a large negative weight — because its conditional first stage `ω̂(1) ≈ −0.495` enters the averaging formula with the wrong sign. The AI interacted estimator uses `|ω̂(X)|` as its weight, so both strata receive weights near 0.5. The second plot then shows the direct consequence: the noninteracted estimate near zero versus the AI estimate near 1.0, against the dashed line at the true LATE. Because both strata have `τ = 1`, the opposite-sign weights cancel nearly perfectly, confirming Słoczyński's theoretical result that the noninteracted estimand can be near zero even when every individual effect is positive.
+**The diagnostic plots make the mechanism concrete.** The first plot shows the implied weights that each estimand places on each stratum's LATE. Under the noninteracted IV, stratum `X = 1` receives a large negative weight — because its conditional first stage `ω̂(1) ≈ −0.495` enters the averaging formula with the wrong sign. The τ_LATE Wald uses `|ω̂(X)|` as its weight, so both strata receive weights near 0.5. The second plot then shows the direct consequence: the noninteracted estimate near zero versus the τ_LATE estimate near 1.0, against the dashed line at the true LATE. Because both strata have `τ = 1`, the opposite-sign weights cancel near-perfectly, confirming Słoczyński's theoretical result that the noninteracted estimand can be near zero even when every individual effect is positive.
+
+**A note on the estimator label.** The pooled per-stratum Wald used here is the τ_LATE-targeting estimator under WM (see Section 7). It is closely related to but not identical to the Angrist-Imbens (1995) interacted 2SLS. Per Theorem 3.2 of the paper, AI's interacted 2SLS recovers a positively-weighted average of conditional LATEs but with weights `π(X)² · Var(Z | X)`, not `π(X)`. Both estimators avoid negative weights; they differ in *which* positively-weighted aggregation they target.
 
 ## 12. Further reading
 
@@ -233,6 +235,5 @@ The noninteracted estimate lands near −0.026, a gap of over one unit from the 
 3. Kolesár (2013) — closest antecedent; weak-monotonicity 2SLS interpretation in greater generality.
 4. Blandhol, Bonney, Mogstad & Torgovitsky (2025) — sibling paper on saturation and the propensity-score channel.
 5. Mogstad, Torgovitsky & Walters (2021) — TSLS interpretation with multiple instruments.
-6. Chao, Swanson & Woutersen (2023) — FEJIV estimator implemented in the companion `fejiv` package.
 
 See [`references.md`](references.md) for full citations.
