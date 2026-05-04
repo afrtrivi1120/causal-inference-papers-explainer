@@ -1,6 +1,6 @@
 # When Can We Trust RDD Estimates from Close Elections?
 
-*Paper 03 — Regression Discontinuity Design*
+*Regression Discontinuity Design*
 
 ## 1. Citation
 
@@ -149,7 +149,7 @@ Run it — the Colab badge at the top of the notebook launches it in a free clou
 
 ```bash
 jupyter nbconvert --to notebook --execute --inplace \
-  papers/rdd/03-demagalhaes-et-al-rdd-close-elections/simulation.ipynb
+  papers/rdd/demagalhaes-et-al-rdd-close-elections/simulation.ipynb
 ```
 
 Change the coefficients of `mu(x)` at the top of the notebook to soften or sharpen the curvature and see how the bias contributions move.

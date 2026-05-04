@@ -1,6 +1,6 @@
 # Selection and Parallel Trends
 
-*Paper 01 — Difference-in-Differences*
+*Difference-in-Differences*
 
 ## 1. Citation
 
@@ -127,7 +127,7 @@ Run it — two options:
 
 # Or locally, from the repo root (requires R >= 4.3 with IRkernel registered):
 jupyter nbconvert --to notebook --execute --inplace \
-  papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
+  papers/did/ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
 Representative output (seed `20260421`):

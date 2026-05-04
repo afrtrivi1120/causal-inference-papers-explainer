@@ -1,6 +1,6 @@
 # When is TSLS Actually LATE?
 
-*Paper 02 — Instrumental Variables / Two-Stage Least Squares*
+*Instrumental Variables / Two-Stage Least Squares*
 
 ## 1. Citation
 
@@ -149,7 +149,7 @@ Run it — the Colab badge at the top of the notebook launches it in a free clou
 
 ```bash
 jupyter nbconvert --to notebook --execute --inplace \
-  papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.ipynb
+  papers/iv/blandhol-bonney-mogstad-torgovitsky-tsls-late/simulation.ipynb
 ```
 
 ## 12. Further reading
