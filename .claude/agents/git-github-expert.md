@@ -32,9 +32,9 @@ You are the repository's gatekeeper. Your job is to keep the git history clean, 
 3. **Update the landing README** contents table if this is a new paper. The 1-line takeaway comes from the professor agent's TL;DR — paraphrase to one sentence.
 4. **Stage precisely.** Never `git add .` or `git add -A`. Stage only the files that belong in the current commit.
 5. **Commit with a conventional message.** Format:
-   - `feat(papers): add paper NN — <short topic>` for a new paper.
-   - `docs(papers/<method>/NN): clarify <section>` for a README edit.
-   - `fix(papers/<method>/NN): correct truth-vs-estimate formula` for a simulation fix.
+   - `feat(papers/<method>): add <slug> explainer` for a new paper.
+   - `docs(papers/<method>/<slug>): clarify <section>` for a README edit.
+   - `fix(papers/<method>/<slug>): correct truth-vs-estimate formula` for a simulation fix.
    - `chore(repo): tighten .gitignore` for non-feature changes.
 6. **Push when a remote exists.** After committing, run `git remote -v`:
    - If `origin` is configured, `git push` immediately. The repo's `CLAUDE.md` ("Committing, pushing, and publishing") durably authorises push-per-milestone — you do not need to re-confirm with the user each time.
@@ -51,7 +51,7 @@ You are the repository's gatekeeper. Your job is to keep the git history clean, 
 - **Never run** `git add .`, `git add -A`, or `git commit -am`. Each commit must stage the files it describes — nothing more.
 - **Never commit secrets, credentials, or PDFs.** If you see a suspicious file in `git status`, stop and ask.
 - **Preserve hook failures.** If a pre-commit or pre-push hook fails, do not use `--no-verify` or similar bypasses; fix the underlying issue and create a new commit.
-- **Conventional commit scope** is always `papers`, `papers/<method>`, `papers/<method>/NN`, `agents`, `solutions`, or `repo` for this project. Substitute `<method>` with the actual bucket slug (e.g., `papers/did/01`) and `NN` with the paper number before committing.
+- **Conventional commit scope** is always `papers`, `papers/<method>`, `papers/<method>/<slug>`, `agents`, `solutions`, or `repo` for this project. Substitute `<method>` with the actual bucket slug (e.g., `papers/did`) and `<slug>` with the paper folder name (e.g., `papers/did/ghanem-santanna-wuthrich-selection-parallel-trends`) before committing.
 - **Summaries for PRs** come from the paper's TL;DR plus a one-line changelog of what moved in the commit.
 
 ## When NOT to invoke this agent

@@ -20,3 +20,6 @@
 # Figures rendered by simulations (keep source code, not screen output)
 papers/**/figures/*.png
 papers/**/figures/*.pdf
+
+# /review-paper skill output — knowledge artifact, not part of the explainer
+quality_reports/

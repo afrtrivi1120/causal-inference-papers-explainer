@@ -15,25 +15,25 @@ Each entry in this repo answers four questions about a paper:
 
 ## Contents
 
-Papers are organized by methodology. The taxonomy we plan to cover includes **RCTs**, **difference-in-differences (DiD)**, **regression discontinuity (RDD)**, **instrumental variables (IV)**, **synthetic control**, and **causal AI / machine-learning-based methods**, among others. Methodology buckets are created lazily — a bucket folder appears under `papers/` only once the first paper in that category lands, so buckets you don't see yet simply have no entries yet. Paper numbering (`NN-`) is global across the repo and reflects arrival order, so numbers within any one bucket are typically non-contiguous.
+Papers are organized by methodology. The taxonomy we plan to cover includes **RCTs**, **difference-in-differences (DiD)**, **regression discontinuity (RDD)**, **instrumental variables (IV)**, **synthetic control**, and **causal AI / machine-learning-based methods**, among others. Methodology buckets are created lazily — a bucket folder appears under `papers/` only once the first paper in that category lands, so buckets you don't see yet simply have no entries yet. Folders sort alphabetically inside each bucket; there is no global numbering or implied ranking.
 
 ### Difference-in-Differences (DiD)
 
-| # | Paper | Folder | One-line takeaway |
-|---|-------|--------|-------------------|
-| 01 | Ghanem, Sant'Anna & Wüthrich — *Selection and Parallel Trends* | [`papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/`](papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/) | Parallel trends is a restriction on *how units select into treatment*, not a statement about trends alone — and selection-on-gains silently breaks it. |
+| Paper | Folder | One-line takeaway |
+|-------|--------|-------------------|
+| Ghanem, Sant'Anna & Wüthrich — *Selection and Parallel Trends* | [`papers/did/ghanem-santanna-wuthrich-selection-parallel-trends/`](papers/did/ghanem-santanna-wuthrich-selection-parallel-trends/) | Parallel trends is a restriction on *how units select into treatment*, not a statement about trends alone — and selection-on-gains silently breaks it. |
 
 ### Instrumental Variables (IV)
 
-| # | Paper | Folder | One-line takeaway |
-|---|-------|--------|-------------------|
-| 02 | Blandhol, Bonney, Mogstad & Torgovitsky — *When is TSLS Actually LATE?* | [`papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/`](papers/iv/02-blandhol-bonney-mogstad-torgovitsky-tsls-late/) | If your IV regression includes covariates and you don't interact them with the instrument, you're almost certainly *not* estimating a LATE. |
+| Paper | Folder | One-line takeaway |
+|-------|--------|-------------------|
+| Blandhol, Bonney, Mogstad & Torgovitsky — *When is TSLS Actually LATE?* | [`papers/iv/blandhol-bonney-mogstad-torgovitsky-tsls-late/`](papers/iv/blandhol-bonney-mogstad-torgovitsky-tsls-late/) | If your IV regression includes covariates and you don't interact them with the instrument, you're almost certainly *not* estimating a LATE. |
 
 ### Regression Discontinuity (RDD)
 
-| # | Paper | Folder | One-line takeaway |
-|---|-------|--------|-------------------|
-| 03 | De Magalhães, Hangartner, Hirvonen, Meriläinen, Ruiz & Tukiainen — *When Can We Trust RDD Estimates from Close Elections?* | [`papers/rdd/03-demagalhaes-et-al-rdd-close-elections/`](papers/rdd/03-demagalhaes-et-al-rdd-close-elections/) | When E[Y|X] is curved near the cutoff, CER-optimal bandwidths with bias-corrected robust inference give you honest coverage; MSE-optimal + conventional SEs do not. |
+| Paper | Folder | One-line takeaway |
+|-------|--------|-------------------|
+| De Magalhães, Hangartner, Hirvonen, Meriläinen, Ruiz & Tukiainen — *When Can We Trust RDD Estimates from Close Elections?* | [`papers/rdd/demagalhaes-et-al-rdd-close-elections/`](papers/rdd/demagalhaes-et-al-rdd-close-elections/) | When E[Y|X] is curved near the cutoff, CER-optimal bandwidths with bias-corrected robust inference give you honest coverage; MSE-optimal + conventional SEs do not. |
 
 ## How to read an entry
 
@@ -47,7 +47,7 @@ Start with the README. When you want to see the method "in motion", open `simula
 
 ## How to run the notebooks
 
-**Primary path — Colab, no local install.** Open any paper's `simulation.ipynb` on GitHub, click the "Open in Colab" badge at the top, pick *Runtime → Change runtime type → R* once per session, then hit *Runtime → Run all*. The first cell runs `install.packages(...)` for any dep not pre-installed on Colab's R runtime (typically `AER` for paper 02 and `rdrobust` for paper 03).
+**Primary path — Colab, no local install.** Open any paper's `simulation.ipynb` on GitHub, click the "Open in Colab" badge at the top, pick *Runtime → Change runtime type → R* once per session, then hit *Runtime → Run all*. The first cell runs `install.packages(...)` for any dep not pre-installed on Colab's R runtime (typically `AER` for the IV notebooks and `rdrobust` for the RDD notebook).
 
 **Escape hatch — local Jupyter.** R ≥ 4.3 with `IRkernel` registered once:
 
@@ -60,14 +60,14 @@ install.packages(c("tidyverse", "AER", "rdrobust"))
 Then open any notebook:
 
 ```bash
-jupyter lab papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
+jupyter lab papers/did/ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
 Or headless re-execution (useful for verifying a fresh run reproduces the committed outputs):
 
 ```bash
 jupyter nbconvert --to notebook --execute --inplace \
-  papers/did/01-ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
+  papers/did/ghanem-santanna-wuthrich-selection-parallel-trends/simulation.ipynb
 ```
 
 **Requirements:** R ≥ 4.3 plus these packages (each notebook's setup cell installs what it needs):
@@ -83,7 +83,7 @@ Every notebook calls `set.seed(20260421)` so re-running gives identical numbers.
 See [`CLAUDE.md`](CLAUDE.md) for the full pipeline. In short:
 
 1. Drop the PDF in the repo root (it will be gitignored).
-2. Create a new folder `papers/<method>/NN-<first-authors>-<short-topic>/`, where `<method>` is one of the kebab-case buckets (`did`, `iv`, `rdd`, `rct`, `synthetic-control`, `causal-ai`, ...). Create the bucket folder if it is the first paper in that category.
+2. Create a new folder `papers/<method>/<first-authors>-<short-topic>/`, where `<method>` is one of the kebab-case buckets (`did`, `iv`, `rdd`, `rct`, `synthetic-control`, `causal-ai`, ...). Create the bucket folder if it is the first paper in that category.
 3. Use the four project subagents in `.claude/agents/` in order — causal-inference-expert → causal-inference-professor → simulation-notebook-expert → git-github-expert.
 4. Update the contents section above — add the row under the appropriate methodology sub-heading (or add a new sub-heading if this is the first paper in its bucket).
 

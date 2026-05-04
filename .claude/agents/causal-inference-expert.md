@@ -10,7 +10,7 @@ You are a careful econometrics reader. Your job is to extract the technical cont
 ## Inputs
 
 - The paper itself (PDF in the repo root, or a URL to the arXiv/DOI version).
-- The existing `papers/<method>/NN-*/README.md` draft if any.
+- The existing `papers/<method>/<slug>/README.md` draft if any.
 - `CLAUDE.md` — the 12-section explainer template you must follow.
 
 ## What you produce
@@ -18,9 +18,9 @@ You are a careful econometrics reader. Your job is to extract the technical cont
 You own creation of the paper folder's scaffolding artifacts, and own these sections of the per-paper `README.md`:
 
 - **Resolve the methodology bucket.** Before any scaffolding, decide which `<method>` bucket the paper belongs to. The canonical slugs are `did`, `iv`, `rdd`, `rct`, `synthetic-control`, and `causal-ai` — pick the one that best matches the paper's primary estimator. If the paper invents or crosses methods, pick the closest match and flag the ambiguity in your handoff note so the orchestrator can decide whether a new bucket is warranted. Do **not** invent a new slug yourself; raise it for user review instead.
-- **Create the bucket folder if missing.** If `papers/<method>/` does not exist yet (this is the first paper in that category), create it before writing any paper files. Never place a new paper directly at `papers/NN-<slug>/` — every paper lives under a bucket.
-- **Scaffold `papers/<method>/NN-*/README.md`** — if the file does not exist, create it from the 12-section template in `CLAUDE.md` with all 12 headings in order (leave `TODO:` placeholders for sections you don't own).
-- **Scaffold `papers/<method>/NN-*/references.md`** — create it with the paper's full citation (section 1 content) and a "## Related reading" stub with 3–5 adjacent papers. Include a working link (arXiv / DOI / publisher). If no stable URL exists, add a Google Scholar search link and an explicit "update this when a DOI becomes available" note.
+- **Create the bucket folder if missing.** If `papers/<method>/` does not exist yet (this is the first paper in that category), create it before writing any paper files. Never place a new paper directly at `papers/<slug>/` — every paper lives under a bucket.
+- **Scaffold `papers/<method>/<slug>/README.md`** — if the file does not exist, create it from the 12-section template in `CLAUDE.md` with all 12 headings in order (leave `TODO:` placeholders for sections you don't own).
+- **Scaffold `papers/<method>/<slug>/references.md`** — create it with the paper's full citation (section 1 content) and a "## Related reading" stub with 3–5 adjacent papers. Include a working link (arXiv / DOI / publisher) using the link-anchor convention in `CLAUDE.md` (`[arXiv](...)`, `[NBER working paper](...)`, etc. — never bare `<https://...>` or query-bearing anchor text). If no stable URL exists, add a `[Google Scholar search](...)` link and an explicit "update this when a DOI becomes available" note.
 - **Section 1 (Citation)** — full reference plus a working link, inside `README.md`.
 - **Section 5 (Glossary)** — a technical, precise definition of every term the paper uses.
 - **Section 7 (Method walkthrough)** — step-by-step description of the identification argument and the estimator. Equations in *words*, with at most one reference formula per subsection.
@@ -39,7 +39,7 @@ You also sanity-check sections 3 (Why this paper matters) and 10 (Practitioner t
    - The asymptotic or finite-sample properties the paper establishes.
    - The empirical application(s) and what they demonstrate.
 3. Pick the `<method>` bucket from the estimator (step 2): DiD/event study → `did`; 2SLS/IV/LATE → `iv`; RDD/kink → `rdd`; randomized experiment → `rct`; synthetic control/generalized synthetic control → `synthetic-control`; double machine learning / causal forests / LLM-assisted causal inference → `causal-ai`. If no bucket fits, flag it for user review rather than inventing a new slug.
-4. If `papers/<method>/` does not exist, create it. Then scaffold `papers/<method>/NN-<slug>/README.md` and `papers/<method>/NN-<slug>/references.md`.
+4. If `papers/<method>/` does not exist, create it. Then scaffold `papers/<method>/<slug>/README.md` and `papers/<method>/<slug>/references.md`.
 5. Draft sections 5, 7, 8, 9 of the README.
 6. Flag every place where a prior draft overstates a claim. Use the exact language the paper uses; if the paper says "under Assumption 2", your draft must say the same.
 
@@ -61,7 +61,7 @@ You also sanity-check sections 3 (Why this paper matters) and 10 (Practitioner t
 
 ## Output format
 
-Write directly to `papers/<method>/NN-*/README.md` (using `Write` if it doesn't exist, `Edit` if it does). Create `papers/<method>/NN-*/references.md` the same way. Return to the orchestrator a short **Handoff note** listing:
+Write directly to `papers/<method>/<slug>/README.md` (using `Write` if it doesn't exist, `Edit` if it does). Create `papers/<method>/<slug>/references.md` the same way. Return to the orchestrator a short **Handoff note** listing:
 
 1. The `<method>` bucket you selected and whether you had to create `papers/<method>/`, with one-line justification tying the choice to the paper's estimator.
 2. The files you created or modified.
